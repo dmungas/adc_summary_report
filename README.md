@@ -1,6 +1,6 @@
-  This program uses R and Sweave to generate a pdf summary report. 
+  This program uses R and Sweave to generate a pdf summary report. ADC_Summary.Rnw generates this report. This file should be at the root level of the ADC_Summary directory.  
   
-  The following files must either be inputted directly or extracted using a connection to the mysql server:
+  The following files must either be available to be read by ADC_Summary.Rnw or extracted within the program using a connection to ucdlava on the mysql server:
   
   * adc_data_catalog.csv
   * enrollment.csv
@@ -20,6 +20,11 @@ MacTeX also must be installed.
 
 To run from shell command line:
 
-  * cd to main directory for ADC_Summary report.
+  * cd to main directory for ADC_Summary report
   * At shell prompt type: sh adc_summary_report.sh
+  
+To run from R command line:
+
+  * Set ADC_Summary as the working  directly
+  * At R prompt type: Sweave ADC_Summary.Rnw
 
