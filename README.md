@@ -1,12 +1,12 @@
   This program uses R and Sweave to generate a pdf summary report. 
   
-  The following filesmust either be inputted directly of extracted using a connection to the mysql server:
+  The following files must either be inputted directly or extracted using a connection to the mysql server:
   
   * adc_data_catalog.csv
   * enrollment.csv
   * assesslist.csv
   
-  Subfolders are: 
+Subfolders are: 
   
     Input Files - required if .csv files are directly inputted
     SQL Files - required if sql queries for adc_data_catalog and enrollment are being submitted

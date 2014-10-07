@@ -76,17 +76,47 @@
 \markright{UC Davis Alzheimer's Disease Center Report\hfill}
 %\markleft{\hfill Optimizing Cognitive Outcomes for AD Clinical Trials}
 
-<<label="r_prelim",echo=FALSE>>=
+<<label="r_prelim", results = hide, echo=FALSE>>=
 #	setwd("/Volumes/John Deere/dan/Database/Data Extraction/enrolled_survival_07-14/")
 	
-	col_names <- c("blue","green","red","purple")
+	library(RMySQL)
+
+  col_names <- c("blue","green","red","purple")
 
   cur_yr <- as.numeric(format(as.Date(date(), format="%a %b %d %H:%M:%S %Y"), "%Y")) 
 	
-	dcat <- read.table("./Input Files/adc_data_catalog_09-10-14.csv", header=TRUE, sep=",", na.strings = "")
-	enr <- read.table("./Input Files/enrollment_09-10-14.csv", header=TRUE, sep=",", na.strings = "")
-  asl1 <- read.table("./Input Files/assesslist_09-12-14.csv", header=TRUE, sep=",", na.strings = "")
+# 	dcat <- read.table("./Input Files/adc_data_catalog_10-07-14.csv", header=TRUE, sep=",", na.strings = "")
+# 	enr <- read.table("./Input Files/enrollment_10-07-14.csv", header=TRUE, sep=",", na.strings = "")
+#   asl1 <- read.table("./Input Files/assesslist_10-07-14.csv", header=TRUE, sep=",", na.strings = "")
 
+#   ---------------------------------------- Input Data -----------------------------------------------
+sqlPrep <- function(file){
+  paste(scan(file, sep = "\n", what = "character"), collapse = "\n")
+}
+
+sql_enr <- sqlPrep("./SQL Files/Enrollment.sql")
+sql_dcat <- sqlPrep("./SQL Files/ADCDataCatalog_10-06-14.sql")
+
+# sql_enr <- "CALL enrollment"
+# sql_dcat <- "CALL adc_data_catalog"
+sql_asl <- "SELECT a.* FROM assesslist AS a"
+
+lavaDb <- dbConnect(MySQL(), group = "ucdlava", client.flag = CLIENT_MULTI_STATEMENTS)
+res_enr <- dbSendQuery(lavaDb, sql_enr)
+enr <- fetch(res_enr, n = -1)
+dbDisconnect(lavaDb)
+
+lavaDb <- dbConnect(MySQL(), group = "ucdlava", client.flag = CLIENT_MULTI_STATEMENTS)
+res_dcat <- dbSendQuery(lavaDb, sql_dcat)
+dcat <- fetch(res_dcat, n = -1)
+dbDisconnect(lavaDb)
+
+lavaDb <- dbConnect(MySQL(), group = "ucdlava", client.flag = CLIENT_MULTI_STATEMENTS)
+res_asl <- dbSendQuery(lavaDb, sql_asl)
+asl1 <- fetch(res_asl, n = -1)
+dbDisconnect(lavaDb)
+
+# ----------------------------------------------------------------------------------------------------
 	
 	enr$LatestDate <- as.Date(enr$LatestDate)
 	enr$EnrolledDate <- as.Date(enr$EnrolledDate)
@@ -112,9 +142,9 @@
 dcat$grp2 <- ifelse(dcat$ETHNICITY==1,"Other",ifelse(dcat$ETHNICITY==2,"Other",ifelse(dcat$ETHNICITY==3,"Other",ifelse(dcat$ETHNICITY==4,"African American",ifelse(dcat$ETHNICITY==5,"Other",ifelse(dcat$ETHNICITY==6,"Hispanic",ifelse(dcat$ETHNICITY==7,"White",ifelse(dcat$ETHNICITY==8,"Other",NA))))))))
 	dcat$center <- ifelse(dcat$ID>=50000,"East_Bay","Sacramento")
 	
-	dcat$ClinDxMRA <- ifelse(dcat$ETIOLMRA==7 | dcat$ETIOLMRA==8 | dcat$ETIOLMRA==24,2,ifelse(dcat$ETIOLMRA==1 | dcat$ETIOLMRA==2,1,ifelse(dcat$ETIOLMRA==3 | dcat$ETIOLMRA==4,3,ifelse(dcat$ETIOLMRA==9,4,ifelse(dcat$ETIOLMRA==21,ifelse((dcat$MIX1MRA==1 | dcat$MIX1MRA==2) & (dcat$MIX2MRA==3 | dcat$MIX2MRA==4),5,ifelse((dcat$MIX1MRA==3 | dcat$MIX1MRA==4) & (dcat$MIX2MRA==1 | dcat$MIX2MRA==2),5,ifelse((dcat$MIX1MRA==7 | dcat$MIX1MRA==8 | dcat$MIX1MRA==24) & (dcat$MIX2MRA==1 | dcat$MIX2MRA==2),2,ifelse((dcat$MIX2MRA==7 | dcat$MIX2MRA==8 | dcat$MIX2MRA==24) & (dcat$MIX1MRA==1 | dcat$MIX1MRA==2),2,NA)))),NA)))))
+dcat$ClinDxMRA <- ifelse(dcat$ETIOLMRA %in% c(7,8,24),2,ifelse(dcat$ETIOLMRA %in% c(1,2),1,ifelse(dcat$ETIOLMRA %in% c(3,4),3,ifelse(dcat$ETIOLMRA==9,4,ifelse(dcat$ETIOLMRA==21,ifelse(dcat$MIX1MRA %in% c(1,2) & dcat$MIX2MRA %in% c(3,4),5,ifelse(dcat$MIX1MRA %in% c(3,4) & dcat$MIX2MRA %in% c(1,2),5,ifelse(dcat$MIX1MRA %in% c(7,8,24) & dcat$MIX2MRA %in% c(1,2),2,ifelse(dcat$MIX2MRA %in% c(7,8,24) & dcat$MIX1MRA %in% c(1,2),2,NA)))),NA)))))
 	
-	dcat$ClinDxMRA2 <- ifelse(dcat$SYNDRMRA==6,6,ifelse(dcat$SYNDRMRA %in% c(2,3),7,ifelse(dcat$ETIOLMRA==7 | dcat$ETIOLMRA==8 | dcat$ETIOLMRA==24,2,ifelse(dcat$ETIOLMRA==1 | dcat$ETIOLMRA==2,1,ifelse(dcat$ETIOLMRA==3 | dcat$ETIOLMRA==4,3,ifelse(dcat$ETIOLMRA==9,4,ifelse(dcat$ETIOLMRA==21,ifelse((dcat$MIX1MRA==1 | dcat$MIX1MRA==2) & (dcat$MIX2MRA==3 | dcat$MIX2MRA==4),5,ifelse((dcat$MIX1MRA==3 | dcat$MIX1MRA==4) & (dcat$MIX2MRA==1 | dcat$MIX2MRA==2),5,ifelse((dcat$MIX1MRA==7 | dcat$MIX1MRA==8 | dcat$MIX1MRA==24) & (dcat$MIX2MRA==1 | dcat$MIX2MRA==2),2,ifelse((dcat$MIX2MRA==7 | dcat$MIX2MRA==8 | dcat$MIX2MRA==24) & (dcat$MIX1MRA==1 | dcat$MIX1MRA==2),2,NA)))),NA)))))))
+dcat$ClinDxMRA2 <- ifelse(dcat$SYNDRMRA==6,6,ifelse(dcat$SYNDRMRA %in% c(2,3),7,ifelse(dcat$ETIOLMRA %in% c(7,8,24),2,ifelse(dcat$ETIOLMRA %in% c(1,2),1,ifelse(dcat$ETIOLMRA %in% c(3,4),3,ifelse(dcat$ETIOLMRA==9,4,ifelse(dcat$ETIOLMRA==21,ifelse(dcat$MIX1MRA %in% c(1,2) & dcat$MIX2MRA %in% c(3,4),5,ifelse(dcat$MIX1MRA %in% c(3,4) & dcat$MIX2MRA %in% c(1,2),5,ifelse(dcat$MIX1MRA %in% c(7,8,24) & dcat$MIX2MRA %in% c(1,2),2,ifelse(dcat$MIX2MRA %in% c(7,8,24) & dcat$MIX1MRA %in% c(1,2),2,NA)))),NA)))))))
 
 
 dcat$PathDx <- ifelse(dcat$PATHDX1 %in% c("2","3","4","4a","4b","4c"),ifelse(is.na(dcat$PATHDX2) | dcat$PATHDX2 %in% c("-6","-7","-9") | dcat$PATHDX2 %in% c("2","3","4","4a","4b","4c"),1,ifelse(dcat$PATHDX2 %in% c("6","6a","6b","6c","6d"),6,ifelse(dcat$PATHDX2 %in% c("7","7a","7b","7c","7d","7e","7f"),5,9))),ifelse(dcat$PATHDX1 %in% c("6","6a","6b","6c","6d"),ifelse(is.na(dcat$PATHDX2) | dcat$PATHDX2 %in% c("-6","-7","-9") | dcat$PATHDX2 %in% c("6","6a","6b","6c","6d"),2,ifelse(dcat$PATHDX2 %in% c("2","3","4","4a","4b","4c"),6,ifelse(dcat$PATHDX2 %in% c("7","7a","7b","7c","7d","7e","7f"),7,2))),ifelse(dcat$PATHDX1 %in% c("7","7a","7b","7c","7d","7e","7f"),ifelse(is.na(dcat$PATHDX2) | dcat$PATHDX2 %in% c("-6","-7","-9") | dcat$PATHDX2 %in% c("7","7a","7b","7c","7d","7e","7f"),3,ifelse(dcat$PATHDX2 %in% c("2","3","4","4a","4b","4c"),5,ifelse(dcat$PATHDX2 %in% c("6","6a","6b","6c","6d"),7,3))),ifelse(dcat$PATHDX1 %in% c("8","9"),4,ifelse(dcat$PATHDX1 %in% c("1","1a","1b","1c"),ifelse(is.na(dcat$PATHDX2) | dcat$PATHDX2 %in% c("-6","-7","-9") | dcat$PATHDX2 %in% c("1","1a","1b","1c"),8,ifelse(dcat$PATHDX2 %in% c("2","3","4","4a","4b","4c"),9,10)),ifelse(dcat$PATHDX1 %in% c("10","10a","10b","10c") & dcat$PATHDX2 %in% c("8","9"),4,ifelse(!is.na(dcat$PATHDX1) & !dcat$PATHDX1 %in% c("-6","-7","-9"),10,NA)))))))
@@ -981,7 +1011,7 @@ colnames(asl1) <- gsub("idal","ID",colnames(asl1))
 asl1$ID <- as.numeric(asl1$ID)
 asl1$VDate <- as.Date(asl1$VDate)
 
-asl1 <- asl1[!is.na(asl1$VisitType),]
+asl1 <- asl1[!is.na(asl1$VisitType) & !asl1$VisitType == "",]
 
 asl2 <- group_by(asl1, ID)
 asl3 <- summarise(asl2,
@@ -1459,6 +1489,7 @@ autrt$GrantCycle <- factor(autrt$GrantCycle,
                   "2001-2006", 
                   "2006-2011",
                   "2011-2016"))
+autrt$Autopsy <- ifelse(autrt$Autopsy== "", 0, autrt$Autopsy)
 autrt$Autopsy <- factor(autrt$Autopsy, 
          		labels=c("No Autopsy",
                   "Autopsy"))
@@ -1524,11 +1555,11 @@ Table \ref{clin_path_dem} shows correspondence of the final clinical diagnosis w
 table_data_cp <- list()
  
 # Get the basic stats
-table_data_cp[["1991-2006"]] <- getT1Stat("ClinDxMRA2","PathDx",dcat[!dcat$PathDx=="Other" & !dcat$PathDx=="LBD+CVD" & dcat$DtDeath >= as.Date("1991-10-01") & dcat$DtDeath < as.Date("2006-07-01"),])
-table_data_cp[["1991-2006 Total"]] <- getT1Stat("ClinDxPres","PathDx",dcat[!dcat$PathDx=="Other" & !dcat$PathDx=="LBD+CVD" & dcat$DtDeath >= as.Date("1991-10-01") & dcat$DtDeath < as.Date("2006-07-01"),])
-table_data_cp[["2006-2016"]] <- getT1Stat("ClinDxMRA2","PathDx",dcat[!dcat$PathDx=="Other" & !dcat$PathDx=="LBD+CVD" & dcat$DtDeath >= as.Date("2006-07-01") & dcat$DtDeath < as.Date("2016-07-01"),])
-table_data_cp[["2006-2016 Total"]] <- getT1Stat("ClinDxPres","PathDx",dcat[!dcat$PathDx=="Other" & !dcat$PathDx=="LBD+CVD" & dcat$DtDeath >= as.Date("2006-07-01") & dcat$DtDeath < as.Date("2016-07-01"),])
-table_data_cp[["1991-2016 Total"]] <- getT1Stat("ClinDxPres","PathDx",dcat[!dcat$PathDx=="Other" & !dcat$PathDx=="LBD+CVD" & dcat$DtDeath >= as.Date("1991-10-01") & dcat$DtDeath < as.Date("2016-07-01"),])
+table_data_cp[["1991-2006"]] <- getT1Stat("ClinDxMRA2","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("1991-10-01") & dcat$DtDeath < as.Date("2006-07-01"),])
+table_data_cp[["1991-2006 Total"]] <- getT1Stat("ClinDxPres","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("1991-10-01") & dcat$DtDeath < as.Date("2006-07-01"),])
+table_data_cp[["2006-2016"]] <- getT1Stat("ClinDxMRA2","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("2006-07-01") & dcat$DtDeath < as.Date("2016-07-01"),])
+table_data_cp[["2006-2016 Total"]] <- getT1Stat("ClinDxPres","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("2006-07-01") & dcat$DtDeath < as.Date("2016-07-01"),])
+table_data_cp[["1991-2016 Total"]] <- getT1Stat("ClinDxPres","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("1991-10-01") & dcat$DtDeath < as.Date("2016-07-01"),])
 
 
 out_data_cp <- descStatTable(table_data_cp)
