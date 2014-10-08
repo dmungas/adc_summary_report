@@ -26,5 +26,7 @@ To run from shell command line:
 To run from R command line:
 
   * Set ADC_Summary as the working  directly
-  * At R prompt type: Sweave ADC_Summary.Rnw
+  * At R prompt type: Sweave('ADC_Summary.Rnw')
+  * Followed by: library(tools)
+  * And: texi2pdf("ADC_Summary.tex")
 

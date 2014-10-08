@@ -1015,7 +1015,7 @@ asl1 <- asl1[!is.na(asl1$VisitType) & !asl1$VisitType == "",]
 
 asl2 <- group_by(asl1, ID)
 asl3 <- summarise(asl2,
-                  min_assess_list_id = min(AssessListID))
+                   min_assess_list_id = min(AssessListID))
 
 asl1 <- merge(asl1,asl3,by="ID")
 asl1$asn <- asl1$AssessListID - asl1$min_assess_list_id +1
