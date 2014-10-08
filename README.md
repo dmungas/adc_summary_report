@@ -17,6 +17,7 @@ R must be installed, along with the following libraries:
     RMySQL, Gmisc, Hmisc, doBy, plyr, dplyr
     As of 10/7/2014 RMySQL must be installed from source and configuration is tricky. See RMySQL_works.sh.
 MacTeX also must be installed.
+RStudio should be installed.
 
 To run from shell command line:
 
