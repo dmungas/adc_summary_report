@@ -1,6 +1,7 @@
 library(dplyr)
 library(ggplot2)
 
+
 asl1 <- read.table("./Input Files/assesslist_09-12-14.csv", header=TRUE, sep=",", na.strings = "")
 
 colnames(asl1) <- gsub("idal","ID",colnames(asl1))

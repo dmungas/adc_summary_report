@@ -1,85 +1,20 @@
-\documentclass[11pt]{article}
-\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
-\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
-\geometry{margin=0.5in}
-%\geometry{landscape}                % Activate for for rotated page geometry
-\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
-\usepackage{graphicx}
-\usepackage{amssymb}
-\usepackage{epstopdf}
-\usepackage{float}
-\usepackage{pdfpages}
-\usepackage{verbatim}
-\usepackage{topcapt}
-\usepackage{multirow}
-\usepackage{pdflscape}
-\usepackage{booktabs}
-\usepackage{dcolumn}
-\usepackage{longtable}
-%\usepackage{lscape}
-\usepackage[latin1]{inputenc}
-\usepackage{Sweave}
-\usepackage{tabularx}
-\usepackage{natbib}
-\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
-
-%----------------------------------------------------------------------------------------
-%	TITLE PAGE
-%----------------------------------------------------------------------------------------
-
-\newcommand*{\titleAT}{\begingroup % Create the command for including the title page in the document
-\newlength{\drop} % Command for generating a specific amount of whitespace
-\drop=0.1\textheight % Define the command as 10% of the total text height
-
-\rule{\textwidth}{1pt}\par % Thick horizontal line
-\vspace{2pt}\vspace{-\baselineskip} % Whitespace between lines
-\rule{\textwidth}{0.4pt}\par % Thin horizontal line
-
-\vspace{\drop} % Whitespace between the top lines and title
-\centering % Center all text
-%\textcolor{Black}{ % Red font color
-{\Huge \color{blue}UC Davis Alzheimer's Disease Center }\\[0.5\baselineskip] % Title line 1
-%{\Huge \color{blue}In AD Clinical Trials}\\[0.5\baselineskip] % Title line 2
-\vspace{20pt}\vspace{-\baselineskip} % Whitespace between lines
-{\huge \color{blue}Data Report}\\[0.75\baselineskip] % Title line 3
-
-\vspace{0.25\drop} % Whitespace between the title and short horizontal line
-\rule{0.3\textwidth}{0.4pt}\par % Short horizontal line under the title
-\vspace{\drop} % Whitespace between the thin horizontal line and the author name
-
-%{\Large \textsc{Dan Mungas}}\par % Author name
-\par
-\par
-\textsc{\today} 
-
-\vfill % Whitespace between the author name and publisher text
-
-\rule{\textwidth}{0.4pt}\par % Thin horizontal line
-\vspace{2pt}\vspace{-\baselineskip} % Whitespace between lines
-\rule{\textwidth}{1pt}\par % Thick horizontal line
-                                          % Activate to display a given date or no date
-
-\endgroup}
+---
+title: "ADC Summary"
+date: "<center> <h5>  `r format(Sys.time(), '%B %d, %Y')` </h5> </center> "
+output: 
+  html_document:
+    toc: true
+    theme: NULL
+css: custom_markdown_4.css 
+---
 
 
-\begin{document}
-\SweaveOpts{concordance=TRUE}
-%\maketitle
-\titleAT
+```{r, label="r_prelim", message=FALSE, results="hide", echo=FALSE}
 
-\newpage
-\setcounter{secnumdepth}{4}
-\setcounter{tocdepth}{4}
-\tableofcontents
-
-\pagestyle{myheadings}
-\markright{UC Davis Alzheimer's Disease Center Report\hfill}
-%\markleft{\hfill Optimizing Cognitive Outcomes for AD Clinical Trials}
-
-<<label="r_prelim", results = hide, echo=FALSE>>=
-#	setwd("/Volumes/John Deere/dan/Database/Data Extraction/enrolled_survival_07-14/")
+# setwd("/Volumes/John Deere/dan/Database/Data Extraction/enrolled_survival_07-14/")
 	
 	library(RMySQL)
+  library(knitr)
 
   col_names <- c("blue","green","red","purple")
 
@@ -272,7 +207,7 @@ dcat$n_dna  <- factor(dcat$n_dna, labels=c("1","2+"))
 	
 	# A function that takes the variable name,  group by variable name, and dataset name
 # and then runs descriptive statistics for the variable by group
-getT1Stat <- function(varname, byname, dfname, digits=1, html=FALSE, hrzl_prop=TRUE){
+getT1Stat <- function(varname, byname, dfname, digits=1, html=TRUE, hrzl_prop=TRUE){
   getDescriptionStatsBy(dfname[, varname], 
                         dfname[, byname], 
                         add_total_col=TRUE,
@@ -300,21 +235,17 @@ descStatTable <- function(table_data){
 	} 
 	table_out <- list("output_data"=output_data,"rgroup"=rgroup,"n.rgroup"=n.rgroup) 
 }
-
-
-
 	
-@
+```
 
-\newpage
+##  Longitudinal Cohort Characteristics
 
-\section{Longitudinal Cohort Characteristics}
+#### Characteristics of the currently active longitudinal cohort by the most recent clinical diagnosis
 
-%	active most recent by current dx
+<!--  active most recent by current dx -->
 
-Table \ref{adclc_mra} shows characteristics of the currently active longitudinal cohort by the most recent clinical diagnosis.
 
-<<label="active_syndr_mra",echo=FALSE, results=tex>>=
+```{r, label="active_syndr_mra",results="asis",message=FALSE,echo=FALSE}
 
 library("Gmisc")
 library("Hmisc")
@@ -352,20 +283,32 @@ n.cgroup <- c(3,1)
 
 
 #	generate latex code for table
-latex(out_data$output_data,
+# latex(out_data$output_data,
+#           rgroup=out_data$rgroup, n.rgroup=out_data$n.rgroup, 
+#         file="", title="",caption=paste("Characteristics of currently active longitudinal cohort. Total N = ",nrow(dcat1)," (excluding ",n_adni," ADNI cases).",sep=""),
+#         label="adclc_mra",booktabs=TRUE, where="!htbp",cgroup=cgroup,n.cgroup=n.cgroup,longtable=TRUE)
+
+# generate html code for table
+htmlTable(out_data$output_data, align="rrrr",
           rgroup=out_data$rgroup, n.rgroup=out_data$n.rgroup, 
-        file="", title="",caption=paste("Characteristics of currently active longitudinal cohort. Total N = ",nrow(dcat1)," (excluding ",n_adni," ADNI cases).",sep=""),
-        label="adclc_mra",booktabs=TRUE, where="!htbp",cgroup=cgroup,n.cgroup=n.cgroup,longtable=TRUE)   
+          rgroupCSSseparator="", 
+          cgroup = cgroup,
+          n.cgroup = n.cgroup,
+          rowlabel="", 
+          caption=paste("Characteristics of currently active longitudinal cohort. Total N = ",nrow(dcat1)," (excluding ",n_adni," ADNI cases).",sep=""), 
+          # tfoot="<sup>a</sup> Also known as Breslow thickness", 
+          ctable=TRUE)
         
-@
-              
-\newpage
+```
 
-%	active, most recent by ethnicity
+*****
 
-Table \ref{adclc_mra_eth} shows characteristics of the current active cohort by race/ethnicity.
+<!--  active, most recent by ethnicity   -->
+   
+####  Characteristics of the current active cohort by race/ethnicity
 
-<<label="active_eth",echo=FALSE, results=tex>>=
+
+```{r,label="active_eth",echo=FALSE, results="asis"}
 
 # Generate descriptive statistics and save into a list
 # This simplifies the row grouping 
@@ -395,23 +338,32 @@ n.cgroup <- c(4,1)
 
 
 #	generate latex code for table
-latex(out_data$output_data,
+# latex(out_data$output_data,
+#           rgroup=out_data$rgroup, n.rgroup=out_data$n.rgroup, 
+#         file="", title="",caption=paste("Characteristics of currently active longitudinal cohort. Total N = ",nrow(dcat1)," (excluding ",n_adni," ADNI cases).",sep=""),
+#         label="adclc_mra_eth",booktabs=TRUE, where="!htbp",cgroup=cgroup,n.cgroup=n.cgroup,longtable=TRUE)   
+
+# generate html code for table
+htmlTable(out_data$output_data, align="rrrr",
           rgroup=out_data$rgroup, n.rgroup=out_data$n.rgroup, 
-        file="", title="",caption=paste("Characteristics of currently active longitudinal cohort. Total N = ",nrow(dcat1)," (excluding ",n_adni," ADNI cases).",sep=""),
-        label="adclc_mra_eth",booktabs=TRUE, where="!htbp",cgroup=cgroup,n.cgroup=n.cgroup,longtable=TRUE)   
+          rgroupCSSseparator="", 
+          cgroup = cgroup,
+          n.cgroup = n.cgroup,
+          rowlabel="", 
+          caption=paste("Characteristics of currently active longitudinal cohort. Total N = ",nrow(dcat1)," (excluding ",n_adni," ADNI cases).",sep=""), 
+          # tfoot="<sup>a</sup> Also known as Breslow thickness", 
+          ctable=TRUE)
+
+```
+
+*****
+
+<!--  enrolled, longitudinal analysis sample, 2+ SENAS   -->
+
+#### Characteristics of the available longitudinal analysis sample with $\geq2$ SENAS evaluations by baseline diagnosis
 
 
-@
-
-
-
-	\newpage
-
-%	enrolled, longitudinal analysis sample, 2+ SENAS
-
-Table \ref{adclc_anal_dx} shows characteristics of the available longitudinal analysis sample with $ \geq 2$ SENAS evaluations by baseline diagnosis.
-
-<<label="longit_senas",echo=FALSE, results=tex>>=
+```{r, label="longit_senas",echo=FALSE, message=FALSE, warning=FALSE, results="asis"}
 
 dcat1 <- dcat[dcat$ADCLC_Enroll=="Enrolled" & !dcat$ID==999999 & as.integer(dcat$n_senas)>=2,]  
 
@@ -442,22 +394,33 @@ cgroup <- c("Clinical Diagnosis, Baseline Evaluation","")
 n.cgroup <- c(3,1)
 
 #	generate latex code for table
-latex(out_data$output_data,
+# latex(out_data$output_data,
+#           rgroup=out_data$rgroup, n.rgroup=out_data$n.rgroup, 
+#         file="", title="",caption="Characteristics of  longitudinal sample with 2+ SENAS evaluations by baseline diagnosis.",
+#         label="adclc_anal_dx",booktabs=TRUE, where="!htbp",cgroup=cgroup,n.cgroup=n.cgroup, longtable=TRUE)   
+
+# generate html code for table
+htmlTable(out_data$output_data, align="rrrr",
           rgroup=out_data$rgroup, n.rgroup=out_data$n.rgroup, 
-        file="", title="",caption="Characteristics of  longitudinal sample with 2+ SENAS evaluations by baseline diagnosis.",
-        label="adclc_anal_dx",booktabs=TRUE, where="!htbp",cgroup=cgroup,n.cgroup=n.cgroup, longtable=TRUE)   
+          rgroupCSSseparator="", 
+          cgroup = cgroup,
+          n.cgroup = n.cgroup,
+          rowlabel="", 
+          caption="Characteristics of  longitudinal sample with 2+ SENAS evaluations by baseline diagnosis.", 
+          # tfoot="<sup>a</sup> Also known as Breslow thickness", 
+          ctable=TRUE)
+
+```
+
+******
 
 
-@
+<!--  enrolled, longitudinal analysis sample, 2+ SENAS or IVD  -->
+
+#### Characteristics of the available longitudinal analysis sample with $\geq2$ SENAS or IVD neuropsychological evaluations by baseline diagnosis
 
 
-	\newpage
-
-%	enrolled, longitudinal analysis sample, 2+ SENAS or IVD
-
-Table \ref{adclc_anal_dx_2} shows characteristics of the available longitudinal analysis sample with $ \geq 2$ SENAS or IVD Neuropsychological evaluations by baseline diagnosis.
-
-<<label="longit_senas_ivd",echo=FALSE, results=tex>>=
+```{r, label="longit_senas_ivd",echo=FALSE, warning=FALSE, results="asis"}
 
 dcat1 <- dcat[dcat$ADCLC_Enroll=="Enrolled" & !dcat$ID==999999 & (as.integer(dcat$n_senas)>=2 | as.integer(dcat$n_ivd_npsy)>=2),]  
 
@@ -490,22 +453,31 @@ cgroup <- c("Clinical Diagnosis, Baseline Evaluation","")
 n.cgroup <- c(3,1)
 
 #	generate latex code for table
-latex(out_data$output_data,
+# latex(out_data$output_data,
+#           rgroup=out_data$rgroup, n.rgroup=out_data$n.rgroup, 
+#         file="", title="",caption="Characteristics of  longitudinal sample with 2+ SENAS or IVD evaluations by baseline diagnosis.",
+#         label="adclc_anal_dx_2",booktabs=TRUE, where="!htbp",longtable=TRUE,cgroup=cgroup,n.cgroup=n.cgroup)   
+
+# generate html code for table
+htmlTable(out_data$output_data, align="rrrr",
           rgroup=out_data$rgroup, n.rgroup=out_data$n.rgroup, 
-        file="", title="",caption="Characteristics of  longitudinal sample with 2+ SENAS or IVD evaluations by baseline diagnosis.",
-        label="adclc_anal_dx_2",booktabs=TRUE, where="!htbp",longtable=TRUE,cgroup=cgroup,n.cgroup=n.cgroup)   
+          rgroupCSSseparator="", 
+          cgroup = cgroup,
+          n.cgroup = n.cgroup,
+          rowlabel="", 
+          caption="Characteristics of  longitudinal sample with 2+ SENAS or IVD evaluations by baseline diagnosis.", 
+          # tfoot="<sup>a</sup> Also known as Breslow thickness", 
+          ctable=TRUE)
 
 
-@
+```
+
+*****
+
+## Enrollment and Cohort Composition
 
 
-
-\newpage
-
-\section{Enrollment and Cohort Composition}
-
-
-<<label=enr_stat_prelim,  echo=FALSE>>=
+```{r, label=enr_stat_prelim, results="hide", message=FALSE, warning=FALSE, echo=FALSE}
 
 #	Create enrollment and status by year and ethnicity tables
 
@@ -849,23 +821,17 @@ enrstaut4$Hisp_Pct_Aut <- (enrstaut4$Hispanic.Aut.N / enrstaut4$Hispanic.ADCLC.N
 enrstaut4$White_Pct_Aut <- (enrstaut4$White.Aut.N / enrstaut4$White.ADCLC.N) * 100
 enrstaut4$Total_Pct_Aut <- (enrstaut4$Total_Aut / enrstaut4$Total_LC) * 100
 	
+```
+
+#### New enrollment in the ADC longitudinal cohort by race/ethnicity and year
 
 
-@
-
-
-
-Figure \ref{enr_adclc_yr_eth} shows new enrollment in the ADC longitudinal cohort by race/ethnicity and year.
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=enr_adclc_yr_eth, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=enr_adclc_yr_eth, fig=TRUE, warning=FALSE, echo=FALSE}
 
 #	ADCLC Enrollment
 
 par(new=FALSE)
-plot(enr6$Total ~ enr6$YearEnr,xlim = c(1991,cur_yr), ylim = c(0,170), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year of Enrollment", ylab = "Number Enrolled",main="", lty=1, lwd=2.5, col = col_names[1])
+plot(enr6$Total ~ enr6$YearEnr,xlim = c(1991,cur_yr), ylim = c(0,170), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year of Enrollment", ylab = "Number Enrolled", lty=1, lwd=2.5, col = col_names[1])
 par(new=TRUE)
 plot(enr6$African_American.ADCLC.N ~ enr6$YearEnr,xlim = c(1991,cur_yr), ylim = c(0,170), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year of Enrollment", ylab = "Number Enrolled",main="", lty=1, lwd=2.5, col = col_names[2])
 par(new= TRUE)
@@ -873,28 +839,18 @@ plot(enr6$Hispanic.ADCLC.N ~ enr6$YearEnr,xlim = c(1991,cur_yr), ylim = c(0,170)
 par(new= TRUE)
 plot(enr6$White.ADCLC.N ~ enr6$YearEnr,xlim = c(1991,cur_yr), ylim = c(0,170), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year of Enrollment", ylab = "Number Enrolled",main="", lty=1, lwd=2.5, col = col_names[4])
 
-legend("topright",title = "", inset = .00, c('Total','African American','Hispanic','White'), lty = c(1,1,1,1), col=c(col_names[1], col_names[2], col_names[3], col_names[4]),lwd = 2.5,box.col=0,cex=1.1)
+legend("topright",inset = .00, c('Total','African American','Hispanic','White'), lty = c(1,1,1,1), col=c(col_names[1], col_names[2], col_names[3], col_names[4]),lwd = 2.5,box.col=0,cex=1.0)
 
-@
+```
 
-\caption{New enrollment in ADC Longitudinal Cohort by ethnicity and year.}
-\label{enr_adclc_yr_eth}
-\end{center}
-\end{figure}
+#### New enrollment in the Diversity cohort by race/ethnicity and year
 
-\newpage
-
-Figure \ref{enr_c2_yr_eth} shows new enrollment in the Diversity cohort by race/ethnicity and year.
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=enr_c2_yr_eth, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=enr_c2_yr_eth, fig=TRUE,width=7.5,height=5.0, warning=FALSE, message=FALSE, echo=FALSE}
 
 #	C2 Enrollment
 
 par(new=FALSE)
-plot(enr5$Total ~ enr5$YearEnr,xlim = c(2001,cur_yr), ylim = c(0,120), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year of Enrollment", ylab = "Number Enrolled",main="", lty=1, lwd=2.5, col = col_names[1])
+plot(enr5$Total ~ enr5$YearEnr,xlim = c(2001,cur_yr), ylim = c(0,120), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year of Enrollment", ylab = "Number Enrolled",lty=1, lwd=2.5, col = col_names[1])
 par(new=TRUE)
 plot(enr5$African_American.C2.N ~ enr5$YearEnr,xlim = c(2001,cur_yr), ylim = c(0,120), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year of Enrollment", ylab = "Number Enrolled",main="", lty=1, lwd=2.5, col = col_names[2])
 par(new= TRUE)
@@ -902,57 +858,39 @@ plot(enr5$Hispanic.C2.N ~ enr5$YearEnr,xlim = c(2001,cur_yr), ylim = c(0,120), t
 par(new= TRUE)
 plot(enr5$White.C2.N ~ enr5$YearEnr,xlim = c(2001,cur_yr), ylim = c(0,120), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year of Enrollment", ylab = "Number Enrolled",main="", lty=1, lwd=2.5, col = col_names[4])
 
-legend("topright",title = "", inset = .00, c('Total','African American','Hispanic','White'), lty = c(1,1,1,1), col=c(col_names[1], col_names[2], col_names[3], col_names[4]),lwd = 2.5,box.col=0,cex=1.1)
+legend("topright",inset = 0.0, c('Total','African American','Hispanic','White'), lty = c(1,1,1,1), col=c(col_names[1], col_names[2], col_names[3], col_names[4]),lwd = 2.5,box.col=0,cex=1.0)
 
-@
+```
 
-\caption{New enrollment in Diversity Cohort by ethnicity and year.}
-\label{enr_c2_yr_eth}
-\end{center}
-\end{figure}
+*****
+#### Number actively enrolled in the ADC longitudinal cohort by race/ethnicity and year 
 
-\newpage
-
-Figure \ref{active_adclc_yr_eth} shows the number of actively enrolled participants in the ADC longitudinal cohort by race/ethnicity and year.
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=active_adclc_yr_eth, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r,label=active_adclc_yr_eth, fig=TRUE, echo=FALSE}
 
 #	ADCLC Active
 
 par(new=FALSE)
-plot(enrst4$Total ~ enrst4$year,xlim = c(2001,cur_yr), ylim = c(0,700), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[1])
+plot(enrst4$Total ~ enrst4$year,xlim = c(2001,cur_yr), ylim = c(0,800), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active", lty=1, lwd=2.5, col = col_names[1])
 par(new=TRUE)
-plot(enrst4$African_American.ADCLC.N ~ enrst4$year,xlim = c(2001,cur_yr), ylim = c(0,700), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[2])
+plot(enrst4$African_American.ADCLC.N ~ enrst4$year,xlim = c(2001,cur_yr), ylim = c(0,800), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[2])
 par(new= TRUE)
-plot(enrst4$Hispanic.ADCLC.N ~ enrst4$year,xlim = c(2001,cur_yr), ylim = c(0,700), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[3])
+plot(enrst4$Hispanic.ADCLC.N ~ enrst4$year,xlim = c(2001,cur_yr), ylim = c(0,800), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[3])
 par(new= TRUE)
-plot(enrst4$White.ADCLC.N ~ enrst4$year,xlim = c(2001,cur_yr), ylim = c(0,700), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[4])
+plot(enrst4$White.ADCLC.N ~ enrst4$year,xlim = c(2001,cur_yr), ylim = c(0,800), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[4])
 
-legend("topright",title = "", inset = .00, c('Total','African American','Hispanic','White'), lty = c(1,1,1,1), col=c(col_names[1], col_names[2], col_names[3], col_names[4]),lwd = 2.5,box.col=0,cex=1.1)
+legend("topright",inset = .00, c('Total','African American','Hispanic','White'), lty = c(1,1,1,1), col=c(col_names[1], col_names[2], col_names[3], col_names[4]),lwd = 2.5,box.col=0,cex=1.0)
 
-@
+```
 
-\caption{Active enrollment in ADC Longitudinal Cohort by ethnicity and year.}
-\label{active_adclc_yr_eth}
-\end{center}
-\end{figure}
+****
 
-\newpage
+#### Number actively enrolled in the Diversity cohort by race/ethnicity and year. Includes enrollees in a different cohort who were later transferred to the Diversity cohort
 
-Figure \ref{active_c2_yr_eth} shows the number of actively enrolled participants in the Diversity cohort by race/ethnicity and year. This includes individuals who were initially enrolled in a different cohort and subsequently transferred to the Diversity cohort.
 
-\begin{figure}[here]
-\begin{center}
-
-<<label=active_c2_yr_eth, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
-
-#	C2 Active with transfers
+```{r, label=active_c2_yr_eth, fig=TRUE, echo=FALSE}
 
 par(new=FALSE)
-plot(enrstc24$Total ~ enrstc24$year,xlim = c(2001,cur_yr), ylim = c(0,600), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[1])
+plot(enrstc24$Total ~ enrstc24$year,xlim = c(2001,cur_yr), ylim = c(0,600), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active", lty=1, lwd=2.5, col = col_names[1])
 par(new=TRUE)
 plot(enrstc24$African_American.C2.N ~ enrstc24$year,xlim = c(2001,cur_yr), ylim = c(0,600), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[2])
 par(new= TRUE)
@@ -960,28 +898,18 @@ plot(enrstc24$Hispanic.C2.N ~ enrstc24$year,xlim = c(2001,cur_yr), ylim = c(0,60
 par(new= TRUE)
 plot(enrstc24$White.C2.N ~ enrstc24$year,xlim = c(2001,cur_yr), ylim = c(0,600), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[4])
 
-legend("topright",title = "", inset = .00, c('Total','African American','Hispanic','White'), lty = c(1,1,1,1), col=c(col_names[1], col_names[2], col_names[3], col_names[4]),lwd = 2.5,box.col=0,cex=1.1)
+legend("topright",inset = .00, c('Total','African American','Hispanic','White'), lty = c(1,1,1,1), col=c(col_names[1], col_names[2], col_names[3], col_names[4]),lwd = 2.5,box.col=0,cex=1.0)
 
-@
+```
 
-\caption{Active enrollment in Diversity Cohort by ethnicity and year, including transfers from other cohorts.}
-\label{active_c2_yr_eth}
-\end{center}
-\end{figure}
+#### Number actively enrolled in the Diversity cohort by race/ethnicity and year. Excludes enrollees in a different cohort who were later transferred to the Diversity cohort.
 
-\newpage
-
-Figure \ref{active_c2_yr_eth_nt} shows the number of actively enrolled participants in the Diversity cohort by race/ethnicity and year. Individuals who were initially enrolled in a different cohort and subsequently transferred are excluded.
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=active_c2_yr_eth_nt, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=active_c2_yr_eth_nt, fig=TRUE,echo=FALSE}
 
 #	C2 Active without transfers
 
 par(new=FALSE)
-plot(enrstc2t4$Total ~ enrstc2t4$year,xlim = c(2001,cur_yr), ylim = c(0,600), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[1])
+plot(enrstc2t4$Total ~ enrstc2t4$year,xlim = c(2001,cur_yr), ylim = c(0,600), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active", lty=1, lwd=2.5, col = col_names[1])
 par(new=TRUE)
 plot(enrstc2t4$African_American.C2.N ~ enrstc2t4$year,xlim = c(2001,cur_yr), ylim = c(0,600), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[2])
 par(new= TRUE)
@@ -989,21 +917,16 @@ plot(enrstc2t4$Hispanic.C2.N ~ enrstc2t4$year,xlim = c(2001,cur_yr), ylim = c(0,
 par(new= TRUE)
 plot(enrstc2t4$White.C2.N ~ enrstc2t4$year,xlim = c(2001,cur_yr), ylim = c(0,600), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Number Active",main="", lty=1, lwd=2.5, col = col_names[4])
 
-legend("topright",title = "", inset = .00, c('Total','African American','Hispanic','White'), lty = c(1,1,1,1), col=c(col_names[1], col_names[2], col_names[3], col_names[4]),lwd = 2.5,box.col=0,cex=1.1)
+legend("topright",inset = .00, c('Total','African American','Hispanic','White'), lty = c(1,1,1,1), col=c(col_names[1], col_names[2], col_names[3], col_names[4]),lwd = 2.5,box.col=0,cex=1.0)
 
-@
+```
 
-\caption{Active enrollment in Diversity Cohort by ethnicity and year for individuals initially enrolled into Diversity cohort.}
-\label{active_c2_yr_eth_nt}
-\end{center}
-\end{figure}
+*****
 
-\newpage
-
-\section{Longitudinal Cohort Initial and Follow-up Evaluations}
+## Longitudinal Cohort Initial and Follow-up Evaluations   
 
 
-<<label=eval_hx_prelim, echo=FALSE>>=
+```{r, label=eval_hx_prelim, message=FALSE, echo=FALSE}
 
 library(dplyr)
 library(tidyr)
@@ -1058,16 +981,11 @@ asl1$monthl <- format(asl1$VDate, "%b")
 
 asl1 <- merge(asl1,dcat1[,c("ID","Cohort","ADCLC_Enroll","ADCLC_Status"),], by="ID")
 
+```
 
-@
+#### Number of initial evaluations by year for enrollees in the ADC longitudinal cohort
 
-Figure \ref{n_ia_by_year} shows number of initial evaluations by year for individuals enrolled in the longitudinal cohort.
-
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=n_ia_by_year, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=n_ia_by_year, fig=TRUE,echo=FALSE}
 
 noff1 <- group_by(asl1[asl1$VisitType == "Office" & asl1$FirstEval == "Yes" & asl1$ADCLC_Enroll == "Enrolled",], year)
 noffc <- summarise(noff1,
@@ -1081,7 +999,7 @@ noff1 <- group_by(asl1[asl1$VisitType == "Office" & asl1$ID < 50000 & asl1$First
 noffs <- summarise(noff1,
                    n_office_vis = n())
 
-plot(n_office_vis ~ year, data=noffc, type="n",pch=1, main="",xlim=c(2001,cur_yr), ylim=c(0,200), xlab="Year", ylab="Number of Evaluations")
+plot(n_office_vis ~ year, data=noffc, type="n",pch=1, xlim=c(2001,cur_yr), ylim=c(0,200), xlab="Year", ylab="Number of Evaluations")
 lines(n_office_vis ~ year, data=noffc, type="l",col="red",lwd=2)
 lines(n_office_vis ~ year, data=noffe, type="l",col="blue",lwd=2)
 lines(n_office_vis ~ year, data=noffs, type="l",col="green",lwd=2)
@@ -1090,23 +1008,12 @@ legend("topleft",c("ADC Combined","East Bay","Sacramento"), lty=1, col=c("red","
 
 rm(noff1)
 
-@
-
-\caption{Number of longitudinal cohort initial evaluations by year.}
-\label{n_ia_by_year}
-\end{center}
-\end{figure}
+```
 
 
-\newpage
+#### Number of follow-up evaluations by year for enrollees  in the ADC longitudinal cohort
 
-Figure \ref{n_ra_by_year} shows number of follow-up evaluations by year for individuals enrolled in the longitudinal cohort.
-
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=n_ra_by_year, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=n_ra_by_year, fig=TRUE,echo=FALSE}
 
 noff2 <- group_by(asl1[asl1$VisitType == "Office" & !asl1$FirstEval %in% "Yes" & asl1$ADCLC_Enroll == "Enrolled",], year)
 noff2c <- summarise(noff2,
@@ -1129,15 +1036,13 @@ legend("topleft",c("ADC Combined","East Bay","Sacramento"), lty=1, col=c("red","
 
 rm(noff2)
 
-@
+```
 
-\caption{Number of longitudinal cohort follow-up evaluations by year.}
-\label{n_ra_by_year}
-\end{center}
-\end{figure}
+*****
 
+#### Number of evaluations by month, last 36 months
 
-<<label=n_eval_by_month, results=tex, echo=FALSE>>=
+```{r, label=n_eval_by_month, results="asis", echo=FALSE}
 
 asl2 <- filter(asl1, VisitType == "Office" & ADCLC_Enroll == "Enrolled" & (as.Date(date(), format="%a %b %d %H:%M:%S %Y") - VDate) < 1095) %>%
   mutate(site = ifelse(ID >= 50000, "East_Bay", "Sacramento"), type = ifelse(FirstEval == "Yes", "Initial", "Follow-Up"))
@@ -1169,22 +1074,12 @@ visout <- visout[,c("mnthyr","East_Bay.x","Sacramento.x","Combined.x","East_Bay.
 rownames(visout) <- visout$mnthyr
 visout <- visout[, 2:7]
 
-# htmlTable(visout,
-#           align = "cccccc",
-#           cgroup=c("Initial", "Follow-Up"), n.cgroup=c(3,3), 
-#           rowlabel="Month",
-#           headings = c("East Bay S", "acramento C","ombined","East Bay S", "acramento C","ombined"),
-#           ctable = TRUE)
-
-latex(visout,
-        align = "cccccc",
-        cgroup=c("Initial", "Follow-Up"), n.cgroup=c(3,3),
-        colheads = c("East Bay", "Sacramento","Combined","East Bay", "Sacramento","Combined"),
-        file="", 
-        rowlabel="Month",
-        title="N Eval",
-        caption="Number of Initial and Follow-up evaluations by month for last 36 months.",
-        label="n_eval_by_month",booktabs=TRUE, where="!htbp")   
+htmlTable(visout,
+          align = "cccccc",
+          cgroup=c("Initial", "Follow-Up"), n.cgroup=c(3,3), 
+          rowlabel="Month",
+          headings = c("East Bay S", "acramento C","ombined","East Bay S", "acramento C","ombined"),
+          ctable = TRUE)
 
 
 # The following section will display month horizontally
@@ -1206,11 +1101,17 @@ latex(visout,
 #           # tfoot="<sup>a</sup> Also known as Breslow thickness", 
 #           ctable=TRUE)
 
-@
+```
 
 
+*****
 
-<<label=enr_surv_prelim, echo=FALSE>>=
+## Longitudinal Follow-up and Retention
+
+### Follow-up intervals
+
+
+```{r, label=enr_surv_prelim, echo=FALSE}
 
 eth <- ensur
 
@@ -1230,38 +1131,24 @@ eths <- eth[(eth$Cohort == "C2" | eth$Cohort == "C2/Hillblom" | eth$Cohort == "H
 leg1 = c("Demented","MCI","Normal")
 leg2 = c("African American","Hispanic","White")
 
-@
+```
 
-\newpage
+#### Time between completed clinical evaluations of ADC longitudinal cohort participants by year
 
-\section{Longitudinal Follow-up and Retention}
-
-Figure \ref{adclc_fu_interval_bw} shows by year the time between completed clinical evaluations of participants in the ADCLC Longitudinal Cohort.
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=adclc_fu_interval_bw, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=adclc_fu_interval_bw, fig=TRUE, echo=FALSE}
 
 asl5 <- asl[asl$ADCLC_Enroll == "Enrolled",]
-boxplot(asl5$time_betw ~ asl5$year, col="red",outcol="blue",whiskcol="blue",staplecol="blue",medcol="blue",boxcol="blue",main="")
+boxplot(asl5$time_betw ~ asl5$year, col="red",outcol="blue",whiskcol="blue",staplecol="blue",medcol="blue",boxcol="blue")
 
 
-@
+```
 
-\caption{ADC Longititudinal Cohort - Follow-up interval by year. }
-\label{adclc_fu_interval_bw}
-\end{center}
-\end{figure}
+****
 
-\newpage
+#### Average time by year between clinical evaluations \n of participants in the ADC longitudinal cohort
 
-Figure \ref{adclc_fu_interval_mn} shows the average time by year between clinical evaluations of participants in the ADCLC Longitudinal Cohort. Results are presented for the full cohort and the East Bay and Sacramento sites.
 
-\begin{figure}[here]
-\begin{center}
-
-<<label=adclc_fu_interval_mn, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=adclc_fu_interval_mn, fig=TRUE,echo=FALSE}
 
 asl6 <- group_by(asl5, year)
 asl7 <- summarise(asl6,
@@ -1277,7 +1164,7 @@ asl6s <- group_by(asl5s, year)
 asl7s <- summarise(asl6s,
                    mean_time_between = mean(time_betw))
 
-plot(mean_time_between ~ year, data=asl7, type="n",pch=1, main="",xlim=c(2001,cur_yr), ylim=c(0.8,1.8),xlab="Year", ylab = "Average Time Between Evaluations")
+plot(mean_time_between ~ year, data=asl7, type="n",pch=1, xlim=c(2001,cur_yr), ylim=c(0.8,1.8),xlab="Year", ylab = "Average Time Between Evaluations")
 lines(mean_time_between ~ year, data=asl7, type="l",col="red",lwd=2)
 lines(mean_time_between ~ year, data=asl7e, type="l",col="blue",lwd=2)
 lines(mean_time_between ~ year, data=asl7s, type="l",col="green",lwd=2)
@@ -1287,22 +1174,11 @@ legend("topleft",c("ADC Combined","East Bay","Sacramento"), lty=1, col=c("red","
 rm(asl5,asl6,asl5e,asl6e,asl5s,asl6s)
 
 
+```
 
-@
+#### Average time by year between the most recent clinical evaluations and January 1 of the index year
 
-\caption{Average follow-up interval in ADCLC Longitudinal Cohort by year for East Bay and Sacramento sites and combined cohort. }
-\label{adclc_fu_interval_mn}
-\end{center}
-\end{figure}
-
-\newpage
-
-Figure \ref{adclc_fu_int_last} shows the average time by year between the most recent clinical evaluations and January 1 of the index year. Results are presented for the full cohort and the East Bay and Sacramento sites.
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=adclc_fu_int_last, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=adclc_fu_int_last, fig=TRUE, width=4.0, height=4.0, echo=FALSE}
 
 enrdt <- enr[enr$ProjName=="ADCLC", c("ID","EnrolledDate","DroppedDate","LostDate","RefusedDate","DeceasedDate")]
 # enrdt$ID <- as.numeric(enrdt$ID)
@@ -1358,7 +1234,7 @@ tmlst1s <- group_by(tmlst[tmlst$center == "Sacramento",], year)
 tmlsts <- summarise(tmlst1s,
                     mean_time_last = mean(min_time_last))
 
-plot(mean_time_last ~ year, data=tmlstc, type="n",pch=1, main="",xlim=c(2001,cur_yr), ylim=c(0.6,1.1), xlab="Year", ylab = "Average Time Since Last Evaluation")
+plot(mean_time_last ~ year, data=tmlstc, type="n",pch=1, xlim=c(2001,cur_yr), ylim=c(0.6,1.1), xlab="Year", ylab = "Average Time Since Last Evaluation")
 lines(mean_time_last ~ year, data=tmlstc, type="l",col="red",lwd=2)
 lines(mean_time_last ~ year, data=tmlste, type="l",col="blue",lwd=2)
 lines(mean_time_last ~ year, data=tmlsts, type="l",col="green",lwd=2)
@@ -1367,159 +1243,103 @@ legend("topleft",c("ADC Combined","East Bay","Sacramento"), lty=1, col=c("red","
 
 rm(tmlst1,tmlst1e,tmlst1s)
 
+```
+
+*****
+
+### Loss to Follow-up
+
+#### Loss to follow-up (excluding death) by ethnicity for all enrollees in ADC longitudinal cohort
 
 
-@
-
-\caption{ADC Longitudinal Cohort - Average Time Since Last Evaluation by Year. }
-\label{adclc_fu_int_last}
-\end{center}
-\end{figure}
-
-\newpage
-
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=enr_surv_all_adc, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=enr_surv_all_adc, fig=TRUE, echo=FALSE}
 
 eth.surv <- survfit(Surv(time7NLF,status7) ~ grp, data = eth)
 plot(eth.surv,col=col_names, xlab="Time", ylab="% Survival",cex.lab=1.3)
-legend(legend=leg2,"topright", col= col_names, lty=1, lwd=1)
-title("Loss from Follow-up by Ethnicity - All ADC")
+legend(legend=leg2,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
 
+```
 
-@
+#### Loss to follow-up (excluding death) by ethnicity for Diversity cohort
 
-\caption{Loss to follow (excluding death) by ethnicity for all enrollees in ADC longitudinal cohort. }
-\label{enr_surv_all_adc}
-\end{center}
-\end{figure}
-
-\newpage
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=enr_surv_c2, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=enr_surv_c2, fig=TRUE, echo=FALSE}
 
 ethc2.surv7 <- survfit(Surv(time7,status7) ~ grp, data = ethc2)
 plot(ethc2.surv7,col=col_names, xlab="Time", ylab="% Survival",cex.lab=1.3)
-legend(legend=leg2,"topright", col= col_names, lty=1, lwd=1)
-title("Loss from Follow-up by Ethnicity - Diversity Cohort")
+legend(legend=leg2,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
 
-@
+```
 
-\caption{Loss to follow (excluding death) by ethnicity for Diversity Cohort. }
-\label{enr_surv_c2}
-\end{center}
-\end{figure}
+*****
 
-\newpage
+#### Loss to follow-up (excluding death) by ethnicity for Diversity cohort, East Bay
 
-\begin{figure}[here]
-\begin{center}
 
-<<label=enr_surv_c2_eb, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=enr_surv_c2_eb, fig=TRUE,echo=FALSE}
 
 ethe.surv7 <- survfit(Surv(time7,status7) ~ grp, data = ethe)
 plot(ethe.surv7,col=col_names, xlab="Time", ylab="% Survival",cex.lab=1.3)
-legend(legend=leg2,"topright", col= col_names, lty=1, lwd=1)
-title("Loss from Follow-up by Ethnicity - Diversity Cohort, East Bay")
+legend(legend=leg2,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
+
+
+```
+
+
+#### Loss to follow-up (excluding death) by ethnicity for Diversity cohort, Sacramento
 
 
 
-@
-
-\caption{Loss to follow (excluding death) by ethnicity for Diversity Cohort, East Bay. }
-\label{enr_surv_c2_eb}
-\end{center}
-\end{figure}
-
-\newpage
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=enr_surv_c2_s, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r,label=enr_surv_c2_s, fig=TRUE,echo=FALSE}
 
 eths.surv7 <- survfit(Surv(time7,status7) ~ grp, data = eths)
 plot(eths.surv7,col=col_names, xlab="Time", ylab="% Survival",cex.lab=1.3)
-legend(legend=leg2,"topright", col= col_names, lty=1, lwd=1)
-title("Loss from Follow-up by Ethnicity - Diversity Cohort, Sacramento")
+legend(legend=leg2,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
+
+```
+
+*****
+
+<!--	Loss to follow-up due to death by ethnicity  -->
+
+#### Loss to follow-up due to death by ethnicity for all enrollees in ADC longitudinal cohort
 
 
-
-@
-
-\caption{Loss to follow (excluding death) by ethnicity for Diversity Cohort, Sacramento. }
-\label{enr_surv_c2_s}
-\end{center}
-\end{figure}
-
-\newpage
-
-%	Loss to follow-up due to death by ethnicity
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=enr_surv_dth_eth, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=enr_surv_dth_eth, fig=TRUE, echo=FALSE}
 
 eth.surv7d <- survfit(Surv(time7d,status7d) ~ grp, data = eth)
 plot(eth.surv7d,col=col_names, xlab="Time", ylab="% Survival",cex.lab=1.3)
-legend(legend=leg2,"topright", col= col_names, lty=1, lwd=1)
-title("Loss from Follow-up Due to Death - All ADC")
+legend(legend=leg2,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
+
+```
 
 
-@
+<!-- 	Loss to follow-up due to death by initial diagnosis  -->
 
-\caption{Loss to follow due to death by ethnicity for all enrollees in ADC longitudinal cohort. }
-\label{enr_surv_dth_eth}
-\end{center}
-\end{figure}
+#### Loss to follow-up due to death by initial clinical diagnosis for all enrollees in ADC longitudinal cohort
 
-\newpage
 
-%	Loss to follow-up due to death by initial diagnosis
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=enr_surv_dth_dx, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r,label=enr_surv_dth_dx, fig=TRUE, echo=FALSE}
 
 eth.surv7d <- survfit(Surv(time7d,status7d) ~ synd_ia, data = eth)
 plot(eth.surv7d,col=col_names, xlab="Time", ylab="% Survival",cex.lab=1.3)
-legend(legend=leg1,"topright", col= col_names, lty=1, lwd=1)
-title("Loss from Follow-up Due to Death - All ADC")
+legend(legend=leg1,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
+```
 
-@
+*****
 
-\caption{Loss to follow due to death by initial clinical diagnosis for all enrollees in ADC longitudinal cohort. }
-\label{enr_surv_dth_dx}
-\end{center}
-\end{figure}
+## Autopsy Consent and Brain Retrieval Rate
 
-\newpage
+#### Percent of active ADC longitudinal cohort participants with autopsy consent by ethnicity and year
 
-
-\section{Autopsy Consent and Brain Retrieval Rate}
-
-Figure \ref{aut_cons_eth_yr} shows the percent of active ADC longitudinal cohort participants with autopsy consent by ethnicity and year.
-
-\begin{figure}[here]
-\begin{center}
-
-<<label=aut_cons_eth_yr, fig=TRUE,width=7.5,height=7.5,echo=FALSE>>=
+```{r, label=aut_cons_eth_yr, fig=TRUE, echo=FALSE}
 
 #  Autopsy
 
 par(new=FALSE)
-plot(enrstaut4$Total_Pct_Aut ~ enrstaut4$year,xlim = c(2001,cur_yr), ylim = c(0,110), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Percent with Autopsy Consent",main="", lty=1, lwd=2.5, col = col_names[1])
+plot(enrstaut4$Total_Pct_Aut ~ enrstaut4$year,xlim = c(2001,cur_yr), ylim = c(0,110), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "Year", ylab = "Percent with Autopsy Consent", lty=1, lwd=2.5, col = col_names[1])
 par(new=TRUE)
 plot(enrstaut4$Afr_Am_Pct_Aut ~ enrstaut4$year,xlim = c(2001,cur_yr), ylim = c(0,110), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "", ylab = "",main="", lty=1, lwd=2.5, col = col_names[2])
 par(new= TRUE)
@@ -1527,20 +1347,13 @@ plot(enrstaut4$Hisp_Pct_Aut ~ enrstaut4$year,xlim = c(2001,cur_yr), ylim = c(0,1
 par(new= TRUE)
 plot(enrstaut4$White_Pct_Aut ~ enrstaut4$year,xlim = c(2001,cur_yr), ylim = c(0,110), type="l", pch = 39, cex = 1.0, cex.axis=1.2, cex.lab=1.2 ,xlab = "", ylab = "",main="", lty=1, lwd=2.5, col = col_names[4])
 
-legend("topright",title = "", inset = .00, c('Total','African American','Hispanic','White'), lty = c(1,1,1,1), col=c(col_names[1], col_names[2], col_names[3], col_names[4]),lwd = 2.5,box.col=0,cex=1.1)
+legend("bottomright",inset = .00, c('Total','African American','Hispanic','White'), lty = c(1,1,1,1), col=c(col_names[1], col_names[2], col_names[3], col_names[4]),lwd = 2.5,box.col=0,cex=1.0)
 
-@
+```
 
-\caption{Autopsy consent rate in active ADCLC longitudinal  by ethnicity and year.}
-\label{aut_cons_eth_yr}
-\end{center}
-\end{figure}
+#### Number and percent of autopsies by grant cycle in enrollees in the ADC longitudinal cohort.
 
-\newpage
-
-Table \ref{adclc_aut_rt} shows number and percent of autopsies by grant cycle in enrollees in the ADC longitudinal cohort.
-
-<<label="autopsy_rate",echo=FALSE, results=tex>>=
+```{r,label="autopsy_rate",echo=FALSE, warning=FALSE, results="asis"}
 
 #	----------------------------------------------------------------------------------------------------
 #	Autopsy rate in ADCLC
@@ -1586,23 +1399,30 @@ table_data_aut[["2011-2016"]] <- getT1Stat("grp","Autopsy",autrt[!is.na(autrt$gr
 out_data_aut <- descStatTable(table_data_aut)
 out_data_aut$output_data <- out_data_aut$output_data[,c(2:ncol(out_data_aut$output_data),1)]
 
-latex(out_data_aut$output_data,
+# latex(out_data_aut$output_data,
+#           rgroup=out_data_aut$rgroup, n.rgroup=out_data_aut$n.rgroup, 
+#         file="", title="",caption="Autopsies obtained for individuals enrolled in ADC longitudinal cohort by grant cycle.",
+#         label="adclc_aut_rt",booktabs=TRUE, where="!htbp")   
+
+
+# generate html code for table
+htmlTable(out_data_aut$output_data, align="rrrr",
           rgroup=out_data_aut$rgroup, n.rgroup=out_data_aut$n.rgroup, 
-        file="", title="",caption="Autopsies obtained for individuals enrolled in ADC longitudinal cohort by grant cycle.",
-        label="adclc_aut_rt",booktabs=TRUE, where="!htbp")   
-        
-@
+          rgroupCSSseparator="", 
+          rowlabel="", 
+          caption="Autopsies obtained for individuals enrolled in ADC longitudinal cohort by grant cycle.", 
+          # tfoot="<sup>a</sup> Also known as Breslow thickness", 
+          ctable=TRUE)
 
-\newpage
+```
 
-\begin{landscape}
+*****
 
-\section{Clinical-Pathological Correlation}
+## Clinical-Pathological Correlation
 
 
-\thispagestyle{empty}
 
-<<label=pth_dx_prelim,echo=FALSE>>=
+```{r, label=pth_dx_prelim, echo=FALSE}
 
 
 dcat$ClinDxPres <- ifelse(!is.na(dcat$ClinDxMRA) | dcat$SYNDRMRA==2 | dcat$SYNDRMRA==3 | dcat$SYNDRMRA==6,1,2)
@@ -1615,14 +1435,13 @@ n_lbd_cvd <- nrow(dcat[!is.na(dcat$PathDx) & dcat$PathDx=="LBD+CVD",])
 n_oth <- nrow(dcat[!is.na(dcat$PathDx) & dcat$PathDx=="Other",])
 
 
-
-@
-
-
-Table \ref{clin_path_dem} shows correspondence of the final clinical diagnosis with neuropathology diagnosis. This table does not include \Sexpr{n_lbd_cvd} cases with mixed Lewy body and cerebrovascular disease and  \Sexpr{n_oth} cases with other pathologies.
+```
 
 
-<<label="clin_path",echo=FALSE, results=tex>>=
+#### Correspondence of the final clinical diagnosis with neuropathology diagnosis.
+
+
+```{r, label="clin_path",echo=FALSE, warning=FALSE, results="asis"}
 
 #	----------------------------------------------------------------------------------------------------
 #	Clinical-Pathological Correlation
@@ -1647,25 +1466,21 @@ out_data_cp$output_data <- out_data_cp$output_data[,c(2:ncol(out_data_cp$output_
 cgroup <- c("Neuropathology Dx","")
 n.cgroup <- c(8,1)
 
-latex(out_data_cp$output_data,
+# latex(out_data_cp$output_data,
+#           rgroup=out_data_cp$rgroup, n.rgroup=out_data_cp$n.rgroup, 
+#         file="", title="Clinical Dx",caption="Clinical-pathological correlation.",
+#         label="clin_path_dem",booktabs=TRUE, where="!htbp",cgroup=cgroup,n.cgroup=n.cgroup)   
+
+# generate html code for table
+htmlTable(out_data_cp$output_data, align="rrrrrrrrr",
           rgroup=out_data_cp$rgroup, n.rgroup=out_data_cp$n.rgroup, 
-        file="", title="Clinical Dx",caption="Clinical-pathological correlation.",
-        label="clin_path_dem",booktabs=TRUE, where="!htbp",cgroup=cgroup,n.cgroup=n.cgroup)   
+          rgroupCSSseparator="", 
+          cgroup = cgroup,
+          n.cgroup = n.cgroup,
+          rowlabel="", 
+          caption=paste("Clinical-pathological correlation. This table does not include ",n_lbd_cvd," cases with mixed Lewy body and cerebrovascular disease and ",n_oth," cases with other pathologies.", sep=""), 
+          # tfoot="<sup>a</sup> Also known as Breslow thickness", 
+          ctable=TRUE)
 
         
-@
-
-
-\end{landscape}
-
-
-\end{document}  
-
-<<label="copy_pdf",echo=FALSE, results=tex>>=
-
-infnm <- "ADC_Summary.pdf"
-cdt <- format(as.Date(date(), format = "%a %b %d %H:%M:%S %Y"), "%m-%d-%Y")
-outfnm <- paste("Reports/ADC_Summary_", cdt, ".pdf", sep="")
-system(paste("cp -f"," '",infnm, "' ","'",outfnm,"' ", sep=""))
-
-@
+```
