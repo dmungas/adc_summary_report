@@ -1,13 +1,14 @@
 ---
 title: "ADC Summary"
-date: "<center> <h5>  `r format(Sys.time(), '%B %d, %Y')` </h5> </center> "
 output: 
   html_document:
     toc: true
+    toc_depth: 3
     theme: NULL
 css: custom_markdown_4.css 
 ---
 
+<center> <h5> Generation date:  `r format(Sys.time(), '%B %d, %Y')` </h5> </center>
 
 ```{r, label="r_prelim", message=FALSE, results="hide", echo=FALSE}
 
@@ -20,9 +21,9 @@ css: custom_markdown_4.css
 
   cur_yr <- as.numeric(format(as.Date(date(), format="%a %b %d %H:%M:%S %Y"), "%Y")) 
 	
-# 	dcat <- read.table("./Input Files/adc_data_catalog_10-07-14.csv", header=TRUE, sep=",", na.strings = "")
-# 	enr <- read.table("./Input Files/enrollment_10-07-14.csv", header=TRUE, sep=",", na.strings = "")
-#   asl1 <- read.table("./Input Files/assesslist_10-07-14.csv", header=TRUE, sep=",", na.strings = "")
+# 	dcat <- read.table("./Input Files/adc_data_catalog_10-21-14.csv", header=TRUE, sep=",", na.strings = "")
+# 	enr <- read.table("./Input Files/enrollment_10-21-14.csv", header=TRUE, sep=",", na.strings = "")
+#   asl1 <- read.table("./Input Files/assesslist_10-21-14.csv", header=TRUE, sep=",", na.strings = "")
 
 #   ---------------------------------------- Input Data -----------------------------------------------
 sqlPrep <- function(file){
@@ -1045,7 +1046,7 @@ rm(noff2)
 ```{r, label=n_eval_by_month, results="asis", echo=FALSE}
 
 asl2 <- filter(asl1, VisitType == "Office" & ADCLC_Enroll == "Enrolled" & (as.Date(date(), format="%a %b %d %H:%M:%S %Y") - VDate) < 1095) %>%
-  mutate(site = ifelse(ID >= 50000, "East_Bay", "Sacramento"), type = ifelse(FirstEval == "Yes", "Initial", "Follow-Up"))
+  mutate(site = ifelse(ID >= 50000, "East_Bay", "Sacramento"), type = ifelse(!is.na(FirstEval) & FirstEval == "Yes", "Initial", "Follow-Up"))
 
 noff <-  select(asl2, month, monthl, year, site, type) %>% group_by(monthl, year, site, type) %>%
   summarise(n_office_vis = n(), month = min(month)) %>%
