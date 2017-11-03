@@ -1,5 +1,5 @@
 SELECT e.SubjectStudyID + 0 AS id, e.PIDN, s1.SubjectStudyID + 0 AS SENAS_ID, 
-DATE(p1.DOB) AS DOB, p1.GENDER, DATE(p1.DOD) AS DOD, 
+DATE(p1.DOB) AS DOB, p1.GENDER, CONCAT(p1.DODYR,'-',LPAD(p1.DODMO,2,'00'),'-',LPAD(p1.DODDY,2,'00')) AS DOD, 
 IF(p1.ETHNICITY>=1,p1.ETHNICITY,null) ETHNICITY,
 udsdemo.HISPANIC, udsdemo.RACE, udsdemo.EDUC, udsdemo.PRIMLANG, mdem.ENGFL,
 lastsubdemo.MARISTAT, lastsubdemo.RESIDENC, onset.DECAGE AS AgeOnset, 
@@ -105,7 +105,9 @@ left join (
 -- Add Most Recent Eval Data
 -- Add death date and autopsy
 left join (
-  SELECT PIDN, DEATHDT, IF(AUTOPSY=1, 1, IF(AUTOPSY = 2, 0, '')) AS AUTOPSY
+  SELECT PIDN, 
+  CONCAT(DODYEAR,'-',LPAD(DODMONTH,2,'00'),'-',LPAD(DODDAY,2,'00')) AS DEATHDT, 
+  IF(AUTOPSY=1, 1, IF(AUTOPSY = 2, 0, '')) AS AUTOPSY
   FROM instrumenttracking
 	join mudsstatus using (InstrID) 
   where DEATHDT is not null or PTRELATION=6
