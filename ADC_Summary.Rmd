@@ -13,9 +13,9 @@ css: custom_markdown_4.css
 This version of this report inputs data files that have been downloaded from
 within the Lava web application
 
-dcat file can be written out on line 443
-dcat file for those with ≥ 2 cognitive evals can be written out on line 658
-date limits for enrollment reports can be changed at 1207
+dcat file can be written out on  about line 449
+dcat file for those with ≥ 2 cognitive evals can be written out on about line 668
+date limits for enrollment reports can be changed at about 1218
 -->
 
 
@@ -35,6 +35,7 @@ date limits for enrollment reports can be changed at 1207
   require("Hmisc")
   require(lattice)
   require(pander)
+  require(htmlTable)
 
   col_names <- c("blue","green","red","purple")
 
@@ -1313,7 +1314,13 @@ legend("topright",inset = .00, c('Total','African American','Hispanic','White'),
 tabout <- enr6
 names(tabout) <- c("Year","African American","Hispanic","White",
       "Other","Total")
-pandoc.table(tabout)
+# pandoc.table(tabout,justify='lccccc')
+htmlTable(tabout,
+          align = "cccccc",
+          header = c("Year  A", "frican American  H","ispanic  W","hite  O", "ther  T","otal"),
+          rnames=FALSE,
+          ctable = TRUE)
+
 
 ```
 

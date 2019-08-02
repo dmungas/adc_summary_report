@@ -1,12 +1,16 @@
-  This program uses R and Sweave to generate a pdf summary report. ADC_Summary.Rnw generates this report. This file should be at the root level of the ADC_Summary directory.  
+  This program originally used R and Sweave to generate a pdf summary report. ADC_Summary.Rnw generates this report. This file should be at the root level of the ADC_Summary directory.  ADC_Summary.Rnw has not been updated since 2014.
   
-  As of 10-17-14 a R Markdown version ADC_Summary.Rmd has been added that generates a html report with customized formatting based on the custom-markdown_4.css stylesheet.
+  As of 10-17-14 a R Markdown version ADC_Summary.Rmd was been added that generates a html report with customized formatting based on the custom-markdown_4.css stylesheet.
   
   The following files must either be available to be read by ADC_Summary.Rnw/ADC_Summary.Rmd or extracted within the program using a connection to ucdlava on the mysql server:
   
-  * adc_data_catalog.csv
-  * enrollment.csv
-  * assesslist.csv
+  * adc_data_catalog.csv (ADC Data Catalog report in Lava)
+  * enrollment.csv (CohortEnrollment report in Lava)
+  * assesslist.csv (ADC Visit Summary (Assess List) report in Lava)
+  * uds health history (UDS Health History (A5) in Lava)
+  * uds subject demographics (UDS Subject Demographics (A1) in Lava)
+  * muds demographic (Muds Demographic in Lava)
+  
   
   Selecting between reading csv input files versus downloading files via MySQL
   connection is accomplished by commenting/uncommenting relevant lines in
@@ -20,10 +24,10 @@ Subfolders are:
 
 R must be installed, along with the following libraries: 
     
-    RMySQL, Gmisc, Hmisc, doBy, plyr, dplyr
+    RMySQL, knitr,Gmisc, Hmisc, doBy, plyr, dplyr,tidyr,lattice,pander,htmlTable
     As of 10/7/2014 RMySQL must be installed from source and configuration is tricky. See RMySQL_works.sh.
-MacTeX also must be installed.
-RStudio should be installed.
+MacTeX also must be installed (Rnw version).
+RStudio should be installed (Rmd version).
 
 To run ADC_Summary.Rnw from shell command line:
 
