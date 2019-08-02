@@ -1,6 +1,6 @@
   This program originally used R and Sweave to generate a pdf summary report. ADC_Summary.Rnw generates this report. This file should be at the root level of the ADC_Summary directory.  ADC_Summary.Rnw has not been updated since 2014.
   
-  As of 10-17-14 a R Markdown version ADC_Summary.Rmd was been added that generates a html report with customized formatting based on the custom-markdown_4.css stylesheet.
+  As of 10-17-14 a R Markdown version ADC_Summary.Rmd was added that generates a html report with customized formatting based on the custom-markdown_4.css stylesheet.
   
   The following files must either be available to be read by ADC_Summary.Rnw/ADC_Summary.Rmd or extracted within the program using a connection to ucdlava on the mysql server:
   
