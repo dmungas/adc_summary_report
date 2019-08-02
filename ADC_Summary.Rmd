@@ -13,8 +13,9 @@ css: custom_markdown_4.css
 This version of this report inputs data files that have been downloaded from
 within the Lava web application
 
-dcat file can be written out on line 442
-date limits for enrollment reports can be changed at 1206
+dcat file can be written out on line 443
+dcat file for those with ≥ 2 cognitive evals can be written out on line 658
+date limits for enrollment reports can be changed at 1207
 -->
 
 
@@ -33,6 +34,7 @@ date limits for enrollment reports can be changed at 1206
   require("Gmisc")
   require("Hmisc")
   require(lattice)
+  require(pander)
 
   col_names <- c("blue","green","red","purple")
 
@@ -42,24 +44,24 @@ date limits for enrollment reports can be changed at 1206
 
 #   --------------------------------- Input Downloaded Data Files  --------------------------------
 	
-  	dcat <- read.table("Input Files/adc_data_catalog_11-02-17.csv", header=TRUE, sep=",", na.strings = "")
-	enr <- read.table("Input Files/enrollment_11-02-17.csv", header=TRUE, sep=",", na.strings = "") # Lava CohortEnrollment report 
-  asl1 <- read.table("Input Files/assesslist_11-02-17.csv", header=TRUE, sep=",", na.strings = "")
-#   hlth <- read.table("Input Files/uds_health_hx_02-02-16.csv", header=TRUE, sep=",", na.strings = "") # semicolon delimited file
+  dcat <- read.table("Input Files/DataCatalog_07-31-19.csv", header=TRUE, sep=",", na.strings = "")
+	enr <- read.table("Input Files/CohortEnrollment_08-01-19.csv", header=TRUE, sep=",", na.strings = "") # Lava CohortEnrollment report 
+  asl1 <- read.table("Input Files/AssessList_08-01-19.csv", header=TRUE, sep=",", na.strings = "")
+#   hlth <- read.table("Input Files/uds_health_hx_02-07-19.csv", header=TRUE, sep=",", na.strings = "") # semicolon delimited file
 
-  h1 <- readLines("Input Files/uds_health_hx_11-02-17.csv") # csv file from Lava
+  h1 <- readLines("Input Files/UdsHealthHistory_08-01-19.csv") # csv file from Lava
   h2 <- gsub('(?m),(?=[^"]*"(?:[^"\r\n]*"[^"]*")*[^"\r\n]*$)','',h1, perl=TRUE)
-  # http://stackoverflow.com/questions/4476812/regular-expressions-how-to-replace-a-character-within-quotes
-  h2 <- gsub("'","",h2, perl=TRUE)
+  # removes comma within quotes, from http://stackoverflow.com/questions/4476812/regular-expressions-how-to-replace-a-character-within-quotes
+  h2 <- gsub("'","",h2, perl=TRUE) # removes apostrophe from text string
   write(h2,file="Input Files/uds_temp.csv")
   hlth <- read.table("Input Files/uds_temp.csv", header=TRUE, sep=",", na.strings = "")
 #   spdna <- read.table("Input Files/serum_plasma_dna_09-28-16.csv", header=TRUE, sep=",", na.strings = "")
   
 # Data files to characterize recruitment source
   
-  mdemo <- read.table("Input Files/muds_demographic_09-21-17.csv", header=TRUE, 
+  mdemo <- read.table("Input Files/MudsDemographicReport_08-01-19.csv", header=TRUE, 
         sep=",", na.strings = "")
-  udemo <- read.table("Input Files/uds_subject_demographics_09-21-17.csv", header=TRUE, 
+  udemo <- read.table("Input Files/UdsSubjectDemographics_08-01-19.csv", header=TRUE, 
         sep=",", na.strings = "")
   
   recr <- merge(udemo[,c("SubjectStudyID","ClinAssessN","DCDate","REASON")],
@@ -148,7 +150,7 @@ date limits for enrollment reports can be changed at 1206
 		    ifelse(dcat$REASEVAL %in% 1,"Clinic",
 		    ifelse(dcat$REASEVAL %in% c(2,3),
 		        ifelse(dcat$REASON %in% c(1,4),"Community",
-		            ifelse(dcat$REASON %in% 2,"Clinic","Not Determined")),
+		            ifelse(dcat$REASON %in% 2,"Clinic",NA)),
 			    ifelse(is.na(dcat$REASEVAL) | dcat$REASEVAL %in% c(-6,-7,-9),
 		        ifelse(dcat$REASON %in% 2,"Clinic",
 		        ifelse(dcat$REASON %in% 1,"Community",
@@ -169,15 +171,15 @@ date limits for enrollment reports can be changed at 1206
 	dcat$synd_ia <- ifelse(dcat$SYNDRIA==2,"Normal",ifelse(dcat$SYNDRIA==3,"Normal",ifelse(dcat$SYNDRIA==6,"MCI",ifelse(dcat$SYNDRIA==5,"Demented",NA))))
 	dcat$synd_mra <- ifelse(dcat$SYNDRMRA==2,"Normal",ifelse(dcat$SYNDRMRA ==3,"Normal",ifelse(dcat$SYNDRMRA ==6,"MCI",ifelse(dcat$SYNDRMRA ==5,"Demented",NA))))
 #	colnames(dcat)[2] <- "ID"
-	dcat$grp <- ifelse(dcat$ETHNICITY==1,NA,
-	             ifelse(dcat$ETHNICITY==2,NA,
-	             ifelse(dcat$ETHNICITY==3,NA,
-	             ifelse(dcat$ETHNICITY==4,"African American",
-	             ifelse(dcat$ETHNICITY==5,NA,
-	             ifelse(dcat$ETHNICITY==6,"Hispanic",
-	             ifelse(dcat$ETHNICITY==7,"White",
-	             ifelse(dcat$ETHNICITY==8,NA,NA))))))))
-dcat$grp2 <- ifelse(dcat$ETHNICITY==1,"Other",ifelse(dcat$ETHNICITY==2,"Other",ifelse(dcat$ETHNICITY==3,"Other",ifelse(dcat$ETHNICITY==4,"African American",ifelse(dcat$ETHNICITY==5,"Other",ifelse(dcat$ETHNICITY==6,"Hispanic",ifelse(dcat$ETHNICITY==7,"White",ifelse(dcat$ETHNICITY==8,"Other",NA))))))))
+	dcat$grp <- ifelse(dcat$Ethnicity==1,NA,
+	             ifelse(dcat$Ethnicity==2,NA,
+	             ifelse(dcat$Ethnicity==3,NA,
+	             ifelse(dcat$Ethnicity==4,"African American",
+	             ifelse(dcat$Ethnicity==5,NA,
+	             ifelse(dcat$Ethnicity==6,"Hispanic",
+	             ifelse(dcat$Ethnicity==7,"White",
+	             ifelse(dcat$Ethnicity==8,NA,NA))))))))
+dcat$grp2 <- ifelse(dcat$Ethnicity==1,"Other",ifelse(dcat$Ethnicity==2,"Other",ifelse(dcat$Ethnicity==3,"Other",ifelse(dcat$Ethnicity==4,"African American",ifelse(dcat$Ethnicity==5,"Other",ifelse(dcat$Ethnicity==6,"Hispanic",ifelse(dcat$Ethnicity==7,"White",ifelse(dcat$Ethnicity==8,"Other",NA))))))))
 	dcat$center <- ifelse(dcat$ID>=50000,"East_Bay","Sacramento")
 	
 dcat$ClinDxMRA <- ifelse(dcat$ETIOLMRA %in% c(7,8,24),2,ifelse(dcat$ETIOLMRA %in% c(1,2),1,ifelse(dcat$ETIOLMRA %in% c(3,4),3,ifelse(dcat$ETIOLMRA==9,4,ifelse(dcat$ETIOLMRA==21,ifelse(dcat$MIX1MRA %in% c(1,2) & dcat$MIX2MRA %in% c(3,4),5,ifelse(dcat$MIX1MRA %in% c(3,4) & dcat$MIX2MRA %in% c(1,2),5,ifelse(dcat$MIX1MRA %in% c(7,8,24) & dcat$MIX2MRA %in% c(1,2),2,ifelse(dcat$MIX2MRA %in% c(7,8,24) & dcat$MIX1MRA %in% c(1,2),2,NA)))),NA)))))
@@ -222,11 +224,11 @@ dcat$n_plasma <- ifelse(dcat$n_plasma>=2,2,
 dcat$n_dna <- ifelse(dcat$n_dna>=2,2,
                        ifelse(dcat$n_dna==1,1,NA))
 
-dcat$edgrp <- ifelse(is.na(dcat$EDUC),NA,
-      ifelse(dcat$EDUC < 12,"0-11",
-      ifelse(dcat$EDUC == 12,"12",
-      ifelse(dcat$EDUC <= 16,"13-16",
-      ifelse(dcat$EDUC > 16,"17+",
+dcat$edgrp <- ifelse(is.na(dcat$Education),NA,
+      ifelse(dcat$Education < 12,"0-11",
+      ifelse(dcat$Education == 12,"12",
+      ifelse(dcat$Education <= 16,"13-16",
+      ifelse(dcat$Education > 16,"17+",
       NA)))))
 
 # table(dcat$n_serum)
@@ -234,7 +236,7 @@ dcat$edgrp <- ifelse(is.na(dcat$EDUC),NA,
 #	table(dcat$Cohort)
 #	table(dcat$synd_ia)
 	
-	dcat2 <- dcat[,c("ID", "DtLastEval", "GENDER", "ETHNICITY", "EDUC", "age_ia", "RecrSource", "Cohort", "center","synd_ia", "synd_mra","grp","edgrp")]
+	dcat2 <- dcat[,c("ID", "DtLastEval", "GENDER", "Ethnicity", "Education", "age_ia", "RecrSource", "Cohort", "center","synd_ia", "synd_mra","grp","edgrp")]
 	ensur <- merge(enr[enr$ProjName=="ADCLC",],dcat2,by="ID")
 	
 	#	table(ensur$grp)
@@ -251,6 +253,11 @@ dcat$edgrp <- ifelse(is.na(dcat$EDUC),NA,
 	ensur$CensorDeath <- ifelse(is.na(ensur$timeDeath),1,0)
 	ensur$Censor7NLF <- ifelse(is.na(ensur$timeNLF),1,ifelse(ensur$timeNLF>7,1,0))
 	ensur$Censor7Death <- ifelse(is.na(ensur$timeDeath),1,ifelse(ensur$timeDeath>7,1,0))
+
+	ensur$time9NLF <- ifelse(is.na(ensur$timeNLF),ifelse(ensur$MaxTime>10,10,ensur$MaxTime),ifelse(ensur$timeNLF>10,10,ensur$timeNLF))
+	ensur$time9Death <- ifelse(is.na(ensur$timeDeath),ifelse(ensur$MaxTime>10,10,ensur$MaxTime),ifelse(ensur$timeDeath>10,10,ensur$timeDeath))
+ensur$Censor9NLF <- ifelse(is.na(ensur$timeNLF),1,ifelse(ensur$timeNLF>10,1,0))
+	ensur$Censor9Death <- ifelse(is.na(ensur$timeDeath),1,ifelse(ensur$timeDeath>10,1,0))
 
 dcat$synd_ia <- 
   factor(dcat$synd_ia, 
@@ -439,8 +446,8 @@ tableBalance <- function(table_data){
 }
 
 #  Output recoded data catalog by uncommented following line
- write.csv(dcat,file="Output Files/adc_data_catalog.csv",row.names=FALSE)
-# saveRDS(dcat,file="Output Files/adc_data_catalog.rds")
+write.csv(dcat,file="Output Files/adc_data_catalog.csv",row.names=FALSE)
+saveRDS(dcat,file="Output Files/adc_data_catalog.rds")
 
 ```
 
@@ -458,7 +465,8 @@ tableBalance <- function(table_data){
 
                   
 dcat1 <- dcat[dcat$ADCLC_Status %in% "Active" & !dcat$ID==999999 & !is.na(dcat$synd_mra) & is.na(dcat$ADNI),]  
-n_adni <- nrow(dcat[dcat$ADCLC_Status %in% "Active" & dcat$Cohort %in% "ADNI",])                
+n_adni <- nrow(dcat[dcat$ADCLC_Status %in% "Active" & dcat$Cohort %in% "ADNI",])  
+n_no_dx <- nrow(dcat[dcat$ADCLC_Status %in% "Active" & !dcat$ID==999999 & is.na(dcat$synd_mra) & is.na(dcat$ADNI),])
 
  
 # Generate descriptive statistics and save into a list
@@ -472,9 +480,10 @@ table_data[["Race/Ethnicity"]] <- getT1Stat("grp2","synd_mra",dcat1)
 table_data[["Recruitment Source"]] <- getT1Stat("RecrSource","synd_mra",dcat1)
 table_data[["Age\\_IA"]] <- getT1Stat("age_ia","synd_mra",dcat1)
 table_data[["Age\\_Current"]] <- getT1Stat("age_cur","synd_mra",dcat1)
-table_data[["Education"]] <- getT1Stat("EDUC","synd_mra",dcat1)
+table_data[["Education"]] <- getT1Stat("Education","synd_mra",dcat1)
 table_data[["N Evals Continuous"]] <- getT1Stat("NMMS","synd_mra",dcat1)
-table_data[["N Evals"]] <- getT1Stat("n_eval","synd_mra",dcat1)
+table_data[["N SENAS Evals"]] <- getT1Stat("n_senas_2","synd_mra",dcat1)
+table_data[["N IVD Evals"]] <- getT1Stat("n_ivd_npsy_2","synd_mra",dcat1)
 table_data[["N 1.5T MRI"]] <- getT1Stat("n_mri","synd_mra",dcat1)
 table_data[["N 3T MRI"]] <- getT1Stat("n_mri_3","synd_mra",dcat1)
 table_data[["N Any MRI"]] <- getT1Stat("n_mri_any","synd_mra",dcat1)
@@ -509,7 +518,7 @@ htmlTable(out_data$output_data, align="rrrr",
           cgroup = cgroup,
           n.cgroup = n.cgroup,
           rowlabel="", 
-          caption=paste("Characteristics of currently active longitudinal cohort. Total N = ",nrow(dcat1)," (excluding ",n_adni," ADNI cases).",sep=""), 
+          caption=paste("Characteristics of currently active longitudinal cohort. Total N = ",nrow(dcat1)," (excluding ",n_adni," ADNI cases and ",n_no_dx," cases pending diagnosis).",sep=""), 
           tfoot="<sup>a</sup> At most recent clinical assessment",
           ctable=TRUE)
         
@@ -535,9 +544,10 @@ table_data[["Gender"]] <- getT1Stat("GENDER","grp2",dcat1)
 table_data[["Recruitment Source"]] <- getT1Stat("RecrSource","grp2",dcat1)
 table_data[["Age\\_IA"]] <- getT1Stat("age_ia","grp2",dcat1)
 table_data[["Age\\_Current"]] <- getT1Stat("age_cur","grp2",dcat1)
-table_data[["Education"]] <- getT1Stat("EDUC","grp2",dcat1)
+table_data[["Education"]] <- getT1Stat("Education","grp2",dcat1)
 table_data[["N Evals Continuous"]] <- getT1Stat("NMMS","grp2",dcat1)
-table_data[["N Evals"]] <- getT1Stat("n_eval","grp2",dcat1)
+table_data[["N SENAS Evals"]] <- getT1Stat("n_senas_2","grp2",dcat1)
+table_data[["N IVD Evals"]] <- getT1Stat("n_ivd_npsy_2","grp2",dcat1)
 table_data[["N 1.5T MRI"]] <- getT1Stat("n_mri","grp2",dcat1)
 table_data[["N 3T MRI"]] <- getT1Stat("n_mri_3","grp2",dcat1)
 table_data[["N Any MRI"]] <- getT1Stat("n_mri_any","grp2",dcat1)
@@ -572,7 +582,7 @@ htmlTable(out_data$output_data, align="rrrr",
           cgroup = cgroup,
           n.cgroup = n.cgroup,
           rowlabel="", 
-          caption=paste("Characteristics of currently active longitudinal cohort. Total N = ",nrow(dcat1)," (excluding ",n_adni," ADNI cases).",sep=""), 
+          caption=paste("Characteristics of currently active longitudinal cohort. Total N = ",nrow(dcat1)," (excluding ",n_adni," ADNI cases and ",n_no_dx," cases pending diagnosis).",sep=""), 
           tfoot="<sup>a</sup> At most recent clinical assessment",
           ctable=TRUE)
 
@@ -598,9 +608,10 @@ table_data <- list()
 table_data[["Current Status in ADCLC"]] <- getT1Stat("ADCLC_Status","synd_ia",dcat1)
 table_data[["Gender"]] <- getT1Stat("GENDER","synd_ia",dcat1)
 table_data[["Syndrome Dx MRA"]] <- getT1Stat("synd_mra","synd_ia",dcat1)
+table_data[["Race/Ethnicity"]] <- getT1Stat("grp2","synd_ia",dcat1)
 table_data[["Recruitment Source"]] <- getT1Stat("RecrSource","synd_ia",dcat1)
 table_data[["Age IA"]] <- getT1Stat("age_ia","synd_ia",dcat1)
-table_data[["Education"]] <- getT1Stat("EDUC","synd_ia",dcat1)
+table_data[["Education"]] <- getT1Stat("Education","synd_ia",dcat1)
 table_data[["N SENAS Evals"]] <- getT1Stat("n_senas_2","synd_ia",dcat1)
 table_data[["N 1.5T MRI"]] <- getT1Stat("n_mri","synd_ia",dcat1)
 table_data[["N 3T MRI"]] <- getT1Stat("n_mri_3","synd_ia",dcat1)
@@ -654,7 +665,7 @@ htmlTable(out_data$output_data, align="rrrr",
 dcat1 <- dcat[dcat$ADCLC_Enroll=="Enrolled" & !dcat$ID==999999 & (as.integer(dcat$n_senas)>=2 | as.integer(dcat$n_ivd_npsy)>=2),]  
 
 #  Output recoded data catalog by uncommented following line
- write.csv(dcat1,file="Output Files/adc_data_catalog_ge2_cogn.csv",row.names=FALSE)
+# write.csv(dcat1,file="Output Files/adc_data_catalog_ge2_cogn.csv",row.names=FALSE)
 # saveRDS(dcat,file="Output Files/adc_data_catalog_ge2_cogn.rds")
 
 
@@ -667,9 +678,10 @@ table_data <- list()
 table_data[["Current Status in ADCLC"]] <- getT1Stat("ADCLC_Status","synd_ia",dcat1)
 table_data[["Gender"]] <- getT1Stat("GENDER","synd_ia",dcat1)
 table_data[["Syndrome Dx MRA"]] <- getT1Stat("synd_mra","synd_ia",dcat1)
+table_data[["Race/Ethnicity"]] <- getT1Stat("grp2","synd_ia",dcat1)
 table_data[["Recruitment Source"]] <- getT1Stat("RecrSource","synd_ia",dcat1)
 table_data[["Age IA"]] <- getT1Stat("age_ia","synd_ia",dcat1)
-table_data[["Education"]] <- getT1Stat("EDUC","synd_ia",dcat1)
+table_data[["Education"]] <- getT1Stat("Education","synd_ia",dcat1)
 table_data[["N SENAS Evals"]] <- getT1Stat("n_senas_2","synd_ia",dcat1)
 table_data[["N IVD Evals"]] <- getT1Stat("n_ivd_npsy_2","synd_ia",dcat1)
 table_data[["N 1.5T MRI"]] <- getT1Stat("n_mri","synd_ia",dcat1)
@@ -742,7 +754,7 @@ htmlTable(out_data$output_data, align="rrrr",
 # enr$DeceasedDate <- as.Date(enr$DeceasedDate)
 
 # enradc <- enr[enr$ProjName %in% "ADC" & !is.na(enr$EnrolledDate),c("ID", "EnrolledDate", "ProjName")]
-# dc1 <- dcat[,c("ID","ETHNICITY","GENDER","RACE")]
+# dc1 <- dcat[,c("ID","Ethnicity","GENDER","RACE")]
 # enradc <- merge(enradc,dc1,by="ID")
 
 lc <- enr[enr$ProjName == "ADCLC" & !is.na(enr$EnrolledDate),c("ID","ProjName","EnrolledDate")]
@@ -756,13 +768,13 @@ enr2$EnrolledDesc <- "ENROLLED"
 
 #	table(enr2$ProjName)
 
-dc1 <- dcat[,c("ID","ETHNICITY","GENDER","RACE")]
+dc1 <- dcat[,c("ID","Ethnicity","GENDER","RACE")]
 enr2 <- merge(enr2,dc1,by="ID")
 
-# enr3 <- summaryBy(ID ~ YearEnr + ProjName + ETHNICITY, data = enr2, FUN=c(length))
+# enr3 <- summaryBy(ID ~ YearEnr + ProjName + Ethnicity, data = enr2, FUN=c(length))
 # colnames(enr3)[4] <- "N"
 
-# enr3$ETHNICITY <- factor(enr3$ETHNICITY)
+# enr3$Ethnicity <- factor(enr3$Ethnicity)
 # enr3$YearEnr <- factor(enr3$YearEnr)
 
 # enr4 <- split(enr3, list(enr3$ProjName))
@@ -770,31 +782,31 @@ enr2 <- merge(enr2,dc1,by="ID")
 # for(i in 1:length(enr4)){
 	# if (i==1){
 		# enr5 <- as.data.frame(enr4[1])[,c(1,3,4)]
-		# colnames(enr5)[1:2] <- c("YearEnr","ETHNICITY")		
+		# colnames(enr5)[1:2] <- c("YearEnr","Ethnicity")		
 	# } else {
 		# enrt <- as.data.frame(enr4[i])[,c(1,3,4)]
-		# colnames(enrt)[1:2] <- c("YearEnr","ETHNICITY")
-		# enr5 <- merge(enr5,enrt,by=c("YearEnr","ETHNICITY"),all=TRUE)		
+		# colnames(enrt)[1:2] <- c("YearEnr","Ethnicity")
+		# enr5 <- merge(enr5,enrt,by=c("YearEnr","Ethnicity"),all=TRUE)		
 	# }
 # }
 
 
-enr3 <- ddply(enr2[!is.na(enr2$ETHNICITY),], .(YearEnrLC, ETHNICITY, ProjName), summarise,
+enr3 <- ddply(enr2[!is.na(enr2$Ethnicity),], .(YearEnrLC, Ethnicity, ProjName), summarise,
 N = length(ID))
 
-# enr3 <- ddply(enr2[!is.na(enr2$ETHNICITY) & enr2$YearEnr == enr2$YearEnrLC,], .(YearEnr, ETHNICITY, ProjName), summarise,
+# enr3 <- ddply(enr2[!is.na(enr2$Ethnicity) & enr2$YearEnr == enr2$YearEnrLC,], .(YearEnr, Ethnicity, ProjName), summarise,
 # N = length(ID))
 
 #	Cohort enrollment by year and ethnicity
 
 for (x in 1986:cur_yr){
   if(!x %in% enr3$YearEnrLC){
-    rval <- data.frame(YearEnrLC = x, ETHNICITY = 9, ProjName = "ADCLC", N = 0)
+    rval <- data.frame(YearEnrLC = x, Ethnicity = 9, ProjName = "ADCLC", N = 0)
     enr3 <- rbind(enr3,rval)
   }
 }
 
-enr4 <- ddply(enr3, .(YearEnrLC, ETHNICITY), summarise, 
+enr4 <- ddply(enr3, .(YearEnrLC, Ethnicity), summarise, 
 	ADCLC.N = sum(ifelse(ProjName=="ADCLC",N,0)),
 	C1.N = sum(ifelse(ProjName=="C1",N,0)),
 	C2.N = sum(ifelse(ProjName=="C2",N,0)),
@@ -806,10 +818,10 @@ enr4 <- ddply(enr3, .(YearEnrLC, ETHNICITY), summarise,
 #	Cohort 2 by year and ethnicity
 
 enr5 <- ddply(enr4, .(YearEnrLC), summarise, 
-	African_American.C2.N = sum(ifelse(ETHNICITY==4,C2.N,0)),
-	Hispanic.C2.N = sum(ifelse(ETHNICITY==6, C2.N,0)),
-	White.C2.N = sum(ifelse(ETHNICITY==7, C2.N,0)),
-	Other.C2.N = sum(ifelse(ETHNICITY %in% c(1,2,3,5,8), C2.N,0))
+	African_American.C2.N = sum(ifelse(Ethnicity==4,C2.N,0)),
+	Hispanic.C2.N = sum(ifelse(Ethnicity==6, C2.N,0)),
+	White.C2.N = sum(ifelse(Ethnicity==7, C2.N,0)),
+	Other.C2.N = sum(ifelse(Ethnicity %in% c(1,2,3,5,8), C2.N,0))
 	)
 	
 	enr5$Total <- enr5$African_American.C2.N + enr5$Hispanic.C2.N + enr5$White.C2.N + enr5$Other.C2.N 
@@ -817,10 +829,10 @@ enr5 <- ddply(enr4, .(YearEnrLC), summarise,
 #	ADCLC by year and ethnicity
 
 enr6 <- ddply(enr4, .(YearEnrLC), summarise, 
-	African_American.ADCLC.N = sum(ifelse(ETHNICITY==4,ADCLC.N,0)),
-	Hispanic.ADCLC.N = sum(ifelse(ETHNICITY==6, ADCLC.N,0)),
-	White.ADCLC.N = sum(ifelse(ETHNICITY==7, ADCLC.N,0)),
-	Other.ADCLC.N = sum(ifelse(ETHNICITY %in% c(1,2,3,5,8), ADCLC.N,0))
+	African_American.ADCLC.N = sum(ifelse(Ethnicity==4,ADCLC.N,0)),
+	Hispanic.ADCLC.N = sum(ifelse(Ethnicity==6, ADCLC.N,0)),
+	White.ADCLC.N = sum(ifelse(Ethnicity==7, ADCLC.N,0)),
+	Other.ADCLC.N = sum(ifelse(Ethnicity %in% c(1,2,3,5,8), ADCLC.N,0))
 	)
 
 	enr6$Total <- enr6$African_American.ADCLC.N + enr6$Hispanic.ADCLC.N + enr6$White.ADCLC.N + enr6$Other.ADCLC.N
@@ -841,17 +853,17 @@ for (yr in 2001:cur_yr){
 	enrst[,lbl] <- ifelse(is.na(enrst$EnrolledDate),"Not_Enrolled",ifelse(!is.na(enrst$RefusedDate) & enrst$RefusedDate <= dt & enrst$RefusedDate >= enrst$EnrolledDate,"Refused",ifelse(!is.na(enrst$DroppedDate) & enrst$DroppedDate <= dt & enrst$DroppedDate >= enrst$EnrolledDate,"Dropped",ifelse(!is.na(enrst$DeceasedDate) & enrst$DeceasedDate <= dt & enrst$DeceasedDate >= enrst$EnrolledDate,"Deceased",ifelse(!is.na(enrst$LostDate) & enrst$LostDate <= dt & enrst$LostDate >= enrst$EnrolledDate,"Lost",ifelse(enrst$EnrolledDate <= dt,"Active",NA))))))	
 }
 
-dcat1 <- dcat[,c("ID","ETHNICITY", "ADCLC_Status")]
+dcat1 <- dcat[,c("ID","Ethnicity", "ADCLC_Status")]
 enrst1 <- merge(enrst,dcat1,by="ID")
 #	enrst1 <- enrst1[enrst1$ADCLC_Status=="Active",]
 #	nrow(enrst1)
-enrst1 <- enrst1[!is.na(enrst1$ETHNICITY),]
+enrst1 <- enrst1[!is.na(enrst1$Ethnicity),]
 
 cnmst <- sapply(2001:cur_yr, function(x) paste("Status_",x,sep=""))
-enrst2 <- data.frame(enrst1[,c("ID","ETHNICITY")], stack(enrst1[,cnmst]))
+enrst2 <- data.frame(enrst1[,c("ID","Ethnicity")], stack(enrst1[,cnmst]))
 enrst2 <- enrst2[with(enrst2,order(ID)),]
 
-# enrst2 <- data.frame(enrst1[,c("ID","ETHNICITY")], stack(enrst1[,c("Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]))
+# enrst2 <- data.frame(enrst1[,c("ID","Ethnicity")], stack(enrst1[,c("Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]))
 # enrst2 <- enrst2[with(enrst2,order(ID)),]
 
 enrst2$year <- substr(enrst2 $ind,8,11)
@@ -859,15 +871,15 @@ enrst2 <- enrst2[!is.na(enrst2$values),]
 enrst2 <- enrst2[enrst2$values=="Active",]
 
 
-enrst3 <- ddply(enrst2, .(ETHNICITY, year), summarise,
+enrst3 <- ddply(enrst2, .(Ethnicity, year), summarise,
 	N = length(ID))
 	
 
 enrst4 <- ddply(enrst3, .(year), summarise, 
-	African_American.ADCLC.N = sum(ifelse(ETHNICITY==4,N,0)),
-	Hispanic.ADCLC.N = sum(ifelse(ETHNICITY==6, N,0)),
-	White.ADCLC.N = sum(ifelse(ETHNICITY==7, N,0)),
-	Other.ADCLC.N = sum(ifelse(ETHNICITY %in% c(1,2,3,5,8), N,0))
+	African_American.ADCLC.N = sum(ifelse(Ethnicity==4,N,0)),
+	Hispanic.ADCLC.N = sum(ifelse(Ethnicity==6, N,0)),
+	White.ADCLC.N = sum(ifelse(Ethnicity==7, N,0)),
+	Other.ADCLC.N = sum(ifelse(Ethnicity %in% c(1,2,3,5,8), N,0))
 	)
 	
 enrst4$Total <- enrst4$African_American.ADCLC.N + enrst4$Hispanic.ADCLC.N + enrst4$White.ADCLC.N + enrst4$Other.ADCLC.N	
@@ -883,18 +895,18 @@ for (yr in 2001:cur_yr){
 	enrstc2[,lbl] <- ifelse(is.na(enrstc2$EnrolledDate),"Not_Enrolled",ifelse(!is.na(enrstc2$RefusedDate) & enrstc2$RefusedDate <= dt & enrstc2$RefusedDate >= enrstc2$EnrolledDate,"Refused",ifelse(!is.na(enrstc2$DroppedDate) & enrstc2$DroppedDate <= dt & enrstc2$DroppedDate >= enrstc2$EnrolledDate,"Dropped",ifelse(!is.na(enrstc2$DeceasedDate) & enrstc2$DeceasedDate <= dt & enrstc2$DeceasedDate >= enrstc2$EnrolledDate,"Deceased",ifelse(!is.na(enrstc2$LostDate) & enrstc2$LostDate <= dt & enrstc2$LostDate >= enrstc2$EnrolledDate,"Lost",ifelse(enrstc2$EnrolledDate <= dt,"Active",NA))))))	
 }
 
-dcat1 <- dcat[,c("ID","ETHNICITY", "ADCLC_Status")]
+dcat1 <- dcat[,c("ID","Ethnicity", "ADCLC_Status")]
 enrstc21 <- merge(enrstc2,dcat1,by="ID")
 #	enrstc21 <- enrstc21[enrstc21$ADCLC_Status=="Active",]
 #	nrow(enrstc21)
-enrstc21 <- enrstc21[!is.na(enrstc21$ETHNICITY),]
+enrstc21 <- enrstc21[!is.na(enrstc21$Ethnicity),]
 
-#	enrstc21[,c("ID","ETHNICITY","Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]
+#	enrstc21[,c("ID","Ethnicity","Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]
 
-enrstc22 <- data.frame(enrstc21[,c("ID","ETHNICITY")], stack(enrstc21[,cnmst]))
+enrstc22 <- data.frame(enrstc21[,c("ID","Ethnicity")], stack(enrstc21[,cnmst]))
 enrstc22 <- enrstc22[with(enrstc22,order(ID)),]
 
-# enrstc22 <- data.frame(enrstc21[,c("ID","ETHNICITY")], stack(enrstc21[,c("Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]))
+# enrstc22 <- data.frame(enrstc21[,c("ID","Ethnicity")], stack(enrstc21[,c("Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]))
 # enrstc22 <- enrstc22[with(enrstc22,order(ID)),]
 
 enrstc22$year <- substr(enrstc22 $ind,8,11)
@@ -902,15 +914,15 @@ enrstc22 <- enrstc22[!is.na(enrstc22$values),]
 enrstc22 <- enrstc22[enrstc22$values=="Active",]
 
 
-enrstc23 <- ddply(enrstc22, .(ETHNICITY, year), summarise,
+enrstc23 <- ddply(enrstc22, .(Ethnicity, year), summarise,
 	N = length(ID))
 	
 
 enrstc24 <- ddply(enrstc23, .(year), summarise, 
-	African_American.C2.N = sum(ifelse(ETHNICITY==4,N,0)),
-	Hispanic.C2.N = sum(ifelse(ETHNICITY==6, N,0)),
-	White.C2.N = sum(ifelse(ETHNICITY==7, N,0)),
-	Other.C2.N = sum(ifelse(ETHNICITY %in% c(1,2,3,5,8), N,0))
+	African_American.C2.N = sum(ifelse(Ethnicity==4,N,0)),
+	Hispanic.C2.N = sum(ifelse(Ethnicity==6, N,0)),
+	White.C2.N = sum(ifelse(Ethnicity==7, N,0)),
+	Other.C2.N = sum(ifelse(Ethnicity %in% c(1,2,3,5,8), N,0))
 	)
 	
 enrstc24$Total <- enrstc24$African_American.C2.N + enrstc24$Hispanic.C2.N + enrstc24$White.C2.N + enrstc24$Other.C2.N	
@@ -939,18 +951,18 @@ for (yr in 2001:cur_yr){
 	enrstc2t[,lbl] <- ifelse(is.na(enrstc2t$EnrolledDate),"Not_Enrolled",ifelse(!is.na(enrstc2t$RefusedDate) & enrstc2t$RefusedDate <= dt & enrstc2t$RefusedDate >= enrstc2t$EnrolledDate,"Refused",ifelse(!is.na(enrstc2t$DroppedDate) & enrstc2t$DroppedDate <= dt & enrstc2t$DroppedDate >= enrstc2t$EnrolledDate,"Dropped",ifelse(!is.na(enrstc2t$DeceasedDate) & enrstc2t$DeceasedDate <= dt & enrstc2t$DeceasedDate >= enrstc2t$EnrolledDate,"Deceased",ifelse(!is.na(enrstc2t$LostDate) & enrstc2t$LostDate <= dt & enrstc2t$LostDate >= enrstc2t$EnrolledDate,"Lost",ifelse(enrstc2t$EnrolledDate <= dt,"Active",NA))))))	
 }
 
-dcat1 <- dcat[,c("ID","ETHNICITY", "ADCLC_Status")]
+dcat1 <- dcat[,c("ID","Ethnicity", "ADCLC_Status")]
 enrstc2t1 <- merge(enrstc2t,dcat1,by="ID")
 #	enrstc2t1 <- enrstc2t1[enrstc2t1$ADCLC_Status=="Active",]
 #	nrow(enrstc2t1)
-enrstc2t1 <- enrstc2t1[!is.na(enrstc2t1$ETHNICITY),]
+enrstc2t1 <- enrstc2t1[!is.na(enrstc2t1$Ethnicity),]
 
-#	enrstc2t1[,c("ID","ETHNICITY","Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]
+#	enrstc2t1[,c("ID","Ethnicity","Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]
 
-enrstc2t2 <- data.frame(enrstc2t1[,c("ID","ETHNICITY")], stack(enrstc2t1[,cnmst]), row.names=NULL)
+enrstc2t2 <- data.frame(enrstc2t1[,c("ID","Ethnicity")], stack(enrstc2t1[,cnmst]), row.names=NULL)
 enrstc2t2 <- enrstc2t2[with(enrstc2t2,order(ID)),]
 
-# enrstc2t2 <- data.frame(enrstc2t1[,c("ID","ETHNICITY")], stack(enrstc2t1[,c("Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]))
+# enrstc2t2 <- data.frame(enrstc2t1[,c("ID","Ethnicity")], stack(enrstc2t1[,c("Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]))
 # enrstc2t2 <- enrstc2t2[with(enrstc2t2,order(ID)),]
 
 enrstc2t2$year <- substr(enrstc2t2 $ind,8,11)
@@ -959,15 +971,15 @@ enrstc2t2 <- enrstc2t2[enrstc2t2$values=="Active",]
 
 #	table(enrstc2t2$values)
 
-enrstc2t3 <- ddply(enrstc2t2, .(ETHNICITY, year), summarise,
+enrstc2t3 <- ddply(enrstc2t2, .(Ethnicity, year), summarise,
 	N = length(ID))
 	
 
 enrstc2t4 <- ddply(enrstc2t3, .(year), summarise, 
-	African_American.C2.N = sum(ifelse(ETHNICITY==4,N,0)),
-	Hispanic.C2.N = sum(ifelse(ETHNICITY==6, N,0)),
-	White.C2.N = sum(ifelse(ETHNICITY==7, N,0)),
-	Other.C2.N = sum(ifelse(ETHNICITY %in% c(1,2,3,5,8), N,0))
+	African_American.C2.N = sum(ifelse(Ethnicity==4,N,0)),
+	Hispanic.C2.N = sum(ifelse(Ethnicity==6, N,0)),
+	White.C2.N = sum(ifelse(Ethnicity==7, N,0)),
+	Other.C2.N = sum(ifelse(Ethnicity %in% c(1,2,3,5,8), N,0))
 	)
 	
 enrstc2t4$Total <- enrstc2t4$African_American.C2.N + enrstc2t4$Hispanic.C2.N + enrstc2t4$White.C2.N + enrstc2t4$Other.C2.N
@@ -1005,18 +1017,18 @@ for (yr in 2001:cur_yr){
 #	Autopsy
 
 
-dcat1 <- dcat[,c("ID","ETHNICITY", "ADCLC_Status")]
+dcat1 <- dcat[,c("ID","Ethnicity", "ADCLC_Status")]
 enrstaut1 <- merge(enrstaut,dcat1,by="ID")
 #	enrstaut1 <- enrstaut1[enrstaut1$ADCLC_Status=="Active",]
 #	nrow(enrstaut1)
-enrstaut1 <- enrstaut1[!is.na(enrstaut1$ETHNICITY),]
+enrstaut1 <- enrstaut1[!is.na(enrstaut1$Ethnicity),]
 
-#	enrstaut1[,c("ID","ETHNICITY","Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]
+#	enrstaut1[,c("ID","Ethnicity","Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]
 
 cnmsta <- sapply(2001:cur_yr, function(x) paste("Status_LC_",x,sep=""))
-enrstaut2 <- data.frame(enrstaut1[,c("ID","ETHNICITY")], stack(enrstaut1[,cnmst]), stack(enrstaut1[,cnmsta]), row.names=NULL)
+enrstaut2 <- data.frame(enrstaut1[,c("ID","Ethnicity")], stack(enrstaut1[,cnmst]), stack(enrstaut1[,cnmsta]), row.names=NULL)
 
-# enrstaut2 <- data.frame(enrstaut1[,c("ID","ETHNICITY")], stack(enrstaut1[,c("Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]), stack(enrstaut1[,c("Status_LC_2001","Status_LC_2002","Status_LC_2003","Status_LC_2004", "Status_LC_2005","Status_LC_2006","Status_LC_2007","Status_LC_2008","Status_LC_2009","Status_LC_2010","Status_LC_2011","Status_LC_2012", "Status_LC_2013","Status_LC_2014")]))
+# enrstaut2 <- data.frame(enrstaut1[,c("ID","Ethnicity")], stack(enrstaut1[,c("Status_2001","Status_2002","Status_2003","Status_2004", "Status_2005","Status_2006","Status_2007","Status_2008","Status_2009","Status_2010","Status_2011","Status_2012", "Status_2013","Status_2014")]), stack(enrstaut1[,c("Status_LC_2001","Status_LC_2002","Status_LC_2003","Status_LC_2004", "Status_LC_2005","Status_LC_2006","Status_LC_2007","Status_LC_2008","Status_LC_2009","Status_LC_2010","Status_LC_2011","Status_LC_2012", "Status_LC_2013","Status_LC_2014")]))
 
 enrstaut2 <- enrstaut2[with(enrstaut2,order(ID)),]
 
@@ -1029,15 +1041,15 @@ enrstlc2 <- enrstaut2
 enrstaut2 <- enrstaut2[enrstaut2$values=="Active",]
 #	table(enrstaut2$values)
 
-enrstaut3 <- ddply(enrstaut2, .(ETHNICITY, year), summarise,
+enrstaut3 <- ddply(enrstaut2, .(Ethnicity, year), summarise,
 	N = length(ID))
 	
 
 enrstaut4 <- ddply(enrstaut3, .(year), summarise, 
-	African_American.Aut.N = sum(ifelse(ETHNICITY==4,N,0)),
-	Hispanic.Aut.N = sum(ifelse(ETHNICITY==6, N,0)),
-	White.Aut.N = sum(ifelse(ETHNICITY==7, N,0)),
-	Other.Aut.N = sum(ifelse(ETHNICITY %in% c(1,2,3,5,8), N,0))
+	African_American.Aut.N = sum(ifelse(Ethnicity==4,N,0)),
+	Hispanic.Aut.N = sum(ifelse(Ethnicity==6, N,0)),
+	White.Aut.N = sum(ifelse(Ethnicity==7, N,0)),
+	Other.Aut.N = sum(ifelse(Ethnicity %in% c(1,2,3,5,8), N,0))
 	)
 	
 enrstaut4$Total_Aut <- enrstaut4$African_American.Aut.N + enrstaut4$Hispanic.Aut.N + enrstaut4$White.Aut.N + enrstaut4$Other.Aut.N	
@@ -1045,15 +1057,15 @@ enrstaut4$Total_Aut <- enrstaut4$African_American.Aut.N + enrstaut4$Hispanic.Aut
 #	ADCLC 
 
 
-enrstlc3 <- ddply(enrstlc2, .(ETHNICITY, year), summarise,
+enrstlc3 <- ddply(enrstlc2, .(Ethnicity, year), summarise,
 	N = length(ID))
 	
 
 enrstlc4 <- ddply(enrstlc3, .(year), summarise, 
-	African_American.ADCLC.N = sum(ifelse(ETHNICITY==4,N,0)),
-	Hispanic.ADCLC.N = sum(ifelse(ETHNICITY==6, N,0)),
-	White.ADCLC.N = sum(ifelse(ETHNICITY==7, N,0)),
-	Other.ADCLC.N = sum(ifelse(ETHNICITY %in% c(1,2,3,5,8), N,0))
+	African_American.ADCLC.N = sum(ifelse(Ethnicity==4,N,0)),
+	Hispanic.ADCLC.N = sum(ifelse(Ethnicity==6, N,0)),
+	White.ADCLC.N = sum(ifelse(Ethnicity==7, N,0)),
+	Other.ADCLC.N = sum(ifelse(Ethnicity %in% c(1,2,3,5,8), N,0))
 	)
 	
 enrstlc4$Total_LC <- enrstlc4$African_American.ADCLC.N + enrstlc4$Hispanic.ADCLC.N + enrstlc4$White.ADCLC.N + enrstlc4$Other.ADCLC.N	
@@ -1070,7 +1082,7 @@ enrstaut4$Total_Pct_Aut <- (enrstaut4$Total_Aut / enrstaut4$Total_LC) * 100
 #### Total ADCC Enrollment (10-91 to present) by race, ethnicity, and gender
 
 ```{r, label=adcc_enroll_tot, results="asis", warning=FALSE, echo=FALSE}
-enrrpta <- dcat[,c("ID","DtIA","GENDER","ETHNICITY","RACE","HISPANIC","ADCLC_Enroll")]
+enrrpta <- dcat[,c("ID","DtIA","GENDER","Ethnicity","RACE","HISPANIC","ADCLC_Enroll")]
 enrrpta$DtIA <- as.Date(enrrpta$DtIA)
 enrrpta <- enrrpta[(enrrpta$DtIA >= "1991-10-01" & enrrpta$DtIA < "2005-09-01") |
       (enrrpta$DtIA >= "1991-10-01" & enrrpta$ADCLC_Enroll %in% "Enrolled"),]
@@ -1081,9 +1093,9 @@ enrrpta$Gender <- factor(enrrpta$GENDER,
                   "Female"))
 
 enrrpta$Hispanic <- ifelse(!is.na(enrrpta$HISPANIC),enrrpta$HISPANIC,
-        ifelse(enrrpta$ETHNICITY %in% 6,1,
-        ifelse(enrrpta$ETHNICITY %in% c(1,2,3,4,5,7,8),0,
-        ifelse(enrrpta$ETHNICITY %in% 9,9,
+        ifelse(enrrpta$Ethnicity %in% 6,1,
+        ifelse(enrrpta$Ethnicity %in% c(1,2,3,4,5,7,8),0,
+        ifelse(enrrpta$Ethnicity %in% 9,9,
         9))))
 
 enrrpta$Hispanic <- ifelse(enrrpta$Hispanic %in% c(-6,-7,-9),9,enrrpta$Hispanic)
@@ -1094,14 +1106,14 @@ enrrpta$Hispanic <- factor(enrrpta$Hispanic,
 
 
 enrrpta$Race <- ifelse(!is.na(enrrpta$RACE),enrrpta$RACE,
-          ifelse(enrrpta$ETHNICITY %in% 7,1,
-          ifelse(enrrpta$ETHNICITY %in% 4,2,
-          ifelse(enrrpta$ETHNICITY %in% 1,3,
-          ifelse(enrrpta$ETHNICITY %in% c(3,5),4,
-          ifelse(enrrpta$ETHNICITY %in% 2,5,
-          ifelse(enrrpta$ETHNICITY %in% 8,50,
-          ifelse(enrrpta$ETHNICITY %in% 6,99,
-          ifelse(enrrpta$ETHNICITY %in% 9,99,
+          ifelse(enrrpta$Ethnicity %in% 7,1,
+          ifelse(enrrpta$Ethnicity %in% 4,2,
+          ifelse(enrrpta$Ethnicity %in% 1,3,
+          ifelse(enrrpta$Ethnicity %in% c(3,5),4,
+          ifelse(enrrpta$Ethnicity %in% 2,5,
+          ifelse(enrrpta$Ethnicity %in% 8,50,
+          ifelse(enrrpta$Ethnicity %in% 6,99,
+          ifelse(enrrpta$Ethnicity %in% 9,99,
           99)))))))))
 
 enrrpta$Race <- ifelse(enrrpta$Race %in% c(-6,-7,-9),99,enrrpta$Race)
@@ -1124,8 +1136,8 @@ enrrpta$racepres <- factor(enrrpta$racepres,
 
 # table(enrrpta$Race)
 # table(enrrpta$RACE)
-# table(enrrpta$ETHNICITY)
-# table(enrrpta$ETHNICITY,enrrpta$RACE)
+# table(enrrpta$Ethnicity)
+# table(enrrpta$Ethnicity,enrrpta$RACE)
 # table(enrrpta$Hispanic)
 # table(enrrpta$hisppres)
 # table(enrrpta$HISPANIC)
@@ -1293,6 +1305,18 @@ legend("topright",inset = .00, c('Total','African American','Hispanic','White'),
 
 ```
 
+#### New enrollment in the ADC longitudinal cohort by race/ethnicity and year (Table)
+
+
+```{r, results="asis", warning=FALSE, echo=FALSE}
+
+tabout <- enr6
+names(tabout) <- c("Year","African American","Hispanic","White",
+      "Other","Total")
+pandoc.table(tabout)
+
+```
+
 #### New enrollment in the Diversity cohort by race/ethnicity and year
 
 ```{r, label=enr_c2_yr_eth, fig=TRUE,width=7.5,height=5.0, warning=FALSE, message=FALSE, echo=FALSE}
@@ -1426,7 +1450,7 @@ asl$monthl <- format(asl$vdt_next, "%b")
 
 # requires dcat from main program
 
-dcat1 <- dcat[,c("ID","ETHNICITY", "Cohort", "center","ADCLC_Status","ADCLC_Enroll","DtLastEval")]
+dcat1 <- dcat[,c("ID","Ethnicity", "Cohort", "center","ADCLC_Status","ADCLC_Enroll","DtLastEval")]
 
 dcat1$time_last <- as.numeric(((as.Date(date(), format="%a %b %d %H:%M:%S %Y") - dcat1$DtLastEval)/365.25))
 dcat1$year_last <- as.factor(format(dcat1$DtLastEval, "%Y"))
@@ -1510,8 +1534,11 @@ rm(noff2)
 #   asl2 <- filter(asl1, VisitType == "Office" & ADCLC_Enroll == "Enrolled" & (as.Date(date(), format="%a %b %d %H:%M:%S %Y") - VDate) < 1095) %>%
 #   mutate(site = ifelse(ID >= 50000, "East_Bay", "Sacramento"), type = ifelse(!is.na(FirstEval) & FirstEval == "Yes", "Initial", "Follow-Up"))
 
-asl2 <- filter(asl1, (VisitType == "Office" | (is.na(VisitType) & VisitStatus %in% c("CAME IN","COMPLETE"))) & ADCLC_Enroll == "Enrolled" & (as.Date(date(), format="%a %b %d %H:%M:%S %Y") - VDate) < 1095) %>%
+asl2 <- filter(asl1, ((VisitType == "Office" & VisitStatus %in% c("CAME IN","COMPLETE")) | (is.na(VisitType) & VisitStatus %in% c("CAME IN","COMPLETE"))) & ADCLC_Enroll == "Enrolled" & (as.Date(date(), format="%a %b %d %H:%M:%S %Y") - VDate) < 1095) %>%
 mutate(site = ifelse(ID >= 50000, "East_Bay", "Sacramento"), type = ifelse(!is.na(FirstEval) & FirstEval == "Yes", "Initial", "Follow-Up"))
+
+# asl2 <- filter(asl1, (VisitType == "Office" | (is.na(VisitType) & VisitStatus %in% c("CAME IN","COMPLETE"))) & ADCLC_Enroll == "Enrolled" & (as.Date(date(), format="%a %b %d %H:%M:%S %Y") - VDate) < 1095) %>%
+# mutate(site = ifelse(ID >= 50000, "East_Bay", "Sacramento"), type = ifelse(!is.na(FirstEval) & FirstEval == "Yes", "Initial", "Follow-Up"))
   
 noff <-  select(asl2, month, monthl, year, site, type) %>% group_by(monthl, year, site, type) %>%
   summarise(n_office_vis = n(), month = min(month)) %>%
@@ -1540,6 +1567,7 @@ fu <- filter(noff, type == "Follow-Up") %>%
   mutate(Combined = ifelse(is.na(East_Bay),0,East_Bay) + ifelse(is.na(Sacramento),0,Sacramento))
 
 visout <- merge(ini[,1:5],fu[,1:5],by=c("mnthseq","mnthyr"),all=TRUE)
+visout <- visout[order(visout$mnthseq),]
 visout <- visout[,c("mnthyr","East_Bay.x","Sacramento.x","Combined.x","East_Bay.y","Sacramento.y","Combined.y")]
 
 rownames(visout) <- visout$mnthyr
@@ -1593,6 +1621,11 @@ eth$statusd <- ifelse(eth$CensorDeath==0,1,ifelse(eth$CensorDeath ==1,0,NA))
 eth$status7d <- ifelse(eth$Censor7Death==0,1,ifelse(eth$Censor7Death ==1,0,NA))
 eth$time7d <- ifelse(eth$time2Death > 7, 7, eth$time2Death)
 
+eth$status9 <- ifelse(eth$Censor9NLF==0,1,ifelse(eth$Censor9NLF ==1,0,NA))
+eth$time9 <- ifelse(eth$time2NLF > 10, 10, eth$time2NLF)
+eth$status9d <- ifelse(eth$Censor9Death==0,1,ifelse(eth$Censor9Death ==1,0,NA))
+eth$time9d <- ifelse(eth$time2Death > 10, 10, eth$time2Death)
+
 
 
 ethc2 <- eth[eth$Cohort == "C2" | eth$Cohort == "C2/Hillblom" | eth$Cohort == "Hillblom",]
@@ -1642,9 +1675,10 @@ xyplot( assess_num ~ time_fu | year, data=aslfugr,
 
 ```{r, label=adclc_fu_interval_bw, fig=TRUE, echo=FALSE}
 
-asl5 <- asl[asl$ADCLC_Enroll == "Enrolled",]
+asl5 <- asl[asl$ADCLC_Enroll %in% "Enrolled",]
 boxplot(asl5$time_betw ~ asl5$year, col="red",outcol="blue",whiskcol="blue",staplecol="blue",medcol="blue",boxcol="blue")
 
+# t1 <- asl5[!is.na(asl5$time_betw) & asl5$time_betw > 10,]
 
 ```
 
@@ -1778,8 +1812,11 @@ rm(tmlst1,tmlst1e,tmlst1s)
 
 
 ```{r, label=enr_surv_all_adc, fig=TRUE, echo=FALSE}
+# summary(eth.surv)
+# summary(eth$time7NLF)
+# eth[!is.na(eth$time7NLF) & eth$time7NLF < 0,]
 
-eth.surv <- survfit(Surv(time7NLF,status7) ~ grp, data = eth)
+eth.surv <- survfit(Surv(time9NLF,status9) ~ grp, data = eth)
 plot(eth.surv,col=col_names, xlab="Time", ylab="% Retained",cex.lab=1.3)
 legend(legend=leg2,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -1790,7 +1827,7 @@ grid(nx=NA,ny=NULL,lwd=2)
 
 ```{r, label=enr_surv_c2, fig=TRUE, echo=FALSE}
 
-ethc2.surv7 <- survfit(Surv(time7,status7) ~ grp, data = ethc2)
+ethc2.surv7 <- survfit(Surv(time9,status9) ~ grp, data = ethc2)
 plot(ethc2.surv7,col=col_names, xlab="Time", ylab="% Retained",cex.lab=1.3)
 legend(legend=leg2,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -1801,7 +1838,7 @@ grid(nx=NA,ny=NULL,lwd=2)
 
 ```{r, label=enr_surv_comm, fig=TRUE, echo=FALSE}
 
-ethc2.surv7 <- survfit(Surv(time7,status7) ~ grp, data = eth[eth$RecrSource %in% "Community",])
+ethc2.surv7 <- survfit(Surv(time9,status9) ~ grp, data = eth[eth$RecrSource %in% "Community",])
 plot(ethc2.surv7,col=col_names, xlab="Time", ylab="% Retained",cex.lab=1.3)
 legend(legend=leg2,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -1815,7 +1852,7 @@ grid(nx=NA,ny=NULL,lwd=2)
 
 ```{r, label=enr_surv_c2_eb, fig=TRUE,echo=FALSE}
 
-ethe.surv7 <- survfit(Surv(time7,status7) ~ grp, data = ethe)
+ethe.surv7 <- survfit(Surv(time9,status9) ~ grp, data = ethe)
 plot(ethe.surv7,col=col_names, xlab="Time", ylab="% Retained",cex.lab=1.3)
 legend(legend=leg2,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -1829,7 +1866,7 @@ grid(nx=NA,ny=NULL,lwd=2)
 
 ```{r,label=enr_surv_c2_s, fig=TRUE,echo=FALSE}
 
-eths.surv7 <- survfit(Surv(time7,status7) ~ grp, data = eths)
+eths.surv7 <- survfit(Surv(time9,status9) ~ grp, data = eths)
 plot(eths.surv7,col=col_names, xlab="Time", ylab="% Retained",cex.lab=1.3)
 legend(legend=leg2,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -1843,7 +1880,7 @@ grid(nx=NA,ny=NULL,lwd=2)
 
 ```{r,label=enr_surv_educ, fig=TRUE,echo=FALSE}
 
-eth.surv <- survfit(Surv(time7NLF,status7) ~ edgrp, data = eth)
+eth.surv <- survfit(Surv(time9NLF,status9) ~ edgrp, data = eth)
 plot(eth.surv,col=col_names, xlab="Time", ylab="% Retained",cex.lab=1.3)
 legend(legend=leg4,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -1859,7 +1896,7 @@ grid(nx=NA,ny=NULL,lwd=2)
 
 ```{r, label=enr_surv_dth_eth, fig=TRUE, echo=FALSE}
 
-eth.surv7d <- survfit(Surv(time7d,status7d) ~ grp, data = eth)
+eth.surv7d <- survfit(Surv(time9d,status9d) ~ grp, data = eth)
 plot(eth.surv7d,col=col_names, xlab="Time", ylab="% Survival",cex.lab=1.3)
 legend(legend=leg2,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -1874,7 +1911,7 @@ grid(nx=NA,ny=NULL,lwd=2)
 
 ```{r,label=enr_surv_dth_dx, fig=TRUE, echo=FALSE}
 
-eth.surv7d <- survfit(Surv(time7d,status7d) ~ synd_ia, data = eth)
+eth.surv7d <- survfit(Surv(time9d,status9d) ~ synd_ia, data = eth)
 plot(eth.surv7d,col=col_names, xlab="Time", ylab="% Survival",cex.lab=1.3)
 legend(legend=leg1,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -1886,7 +1923,7 @@ grid(nx=NA,ny=NULL,lwd=2)
 
 ```{r, label=enr_surv_dth_educ, fig=TRUE, echo=FALSE}
 
-eth.surv7d <- survfit(Surv(time7d,status7d) ~ edgrp, data = eth)
+eth.surv7d <- survfit(Surv(time9d,status9d) ~ edgrp, data = eth)
 plot(eth.surv7d,col=col_names, xlab="Time", ylab="% Survival",cex.lab=1.3)
 legend(legend=leg4,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -1922,6 +1959,9 @@ mcisur$time7Dem <- ifelse(is.na(mcisur$time_dem),ifelse(mcisur$MaxTime>7,7,mcisu
 mcisur$status <- ifelse(is.na(mcisur$time_dem),0,1)
 mcisur$status7 <- ifelse(is.na(mcisur$time_dem),0,ifelse(mcisur$time_dem>7,0,1))
 
+mcisur$time9Dem <- ifelse(is.na(mcisur$time_dem),ifelse(mcisur$MaxTime>10,10,mcisur$MaxTime),ifelse(mcisur$time_dem>10,10,mcisur$time_dem))
+mcisur$status9 <- ifelse(is.na(mcisur$time_dem),0,ifelse(mcisur$time_dem>10,0,1))
+
 
 # mcisur$CensorDem <- ifelse(is.na(mcisur$time_dem),1,0)
 # mcisur$Censor7Dem <- ifelse(is.na(mcisur$time_dem),1,ifelse(mcisur$time_dem>7,1,0))
@@ -1937,7 +1977,7 @@ mcisur$status7 <- ifelse(is.na(mcisur$time_dem),0,ifelse(mcisur$time_dem>7,0,1))
 
 ```{r, label=mci_surv_all_adc, fig=TRUE, echo=FALSE, warning=FALSE}
  
-mci.surv <- survfit(Surv(time7Dem,status7) ~ RecrSource, data = mcisur)
+mci.surv <- survfit(Surv(time9Dem,status9) ~ RecrSource, data = mcisur)
 plot(mci.surv,col=col_names, xlab="Time", ylab="% MCI",cex.lab=1.3)
 legend(legend=leg3,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -1953,7 +1993,7 @@ c2orig <- as.data.frame(enrstc2t)
 c2orig$c2orig <- 1
 c2orig$ID <- as.numeric(c2orig$ID)
 mcisur <- merge(mcisur,c2orig[,c("ID","c2orig")],by="ID",all.x=TRUE) 
-mci.surv2 <- survfit(Surv(time7Dem,status7) ~ RecrSource, data = mcisur[mcisur$c2orig==1,])
+mci.surv2 <- survfit(Surv(time9Dem,status9) ~ RecrSource, data = mcisur[mcisur$c2orig==1,])
 plot(mci.surv2,col=col_names, xlab="Time", ylab="% MCI",cex.lab=1.3)
 legend(legend=leg3,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -1988,13 +2028,17 @@ normsur$time7MCI <- ifelse(is.na(normsur$time_mci),ifelse(normsur$MaxTime>7,7,no
 normsur$statusn <- ifelse(is.na(normsur$time_mci),0,1)
 normsur$status7n <- ifelse(is.na(normsur$time_mci),0,ifelse(normsur$time_mci>7,0,1))
 
+normsur$time9MCI <- ifelse(is.na(normsur$time_mci),ifelse(normsur$MaxTime>10,10,normsur$MaxTime),ifelse(normsur$time_mci>10,10,normsur$time_mci))
+
+normsur$status9n <- ifelse(is.na(normsur$time_mci),0,ifelse(normsur$time_mci>10,0,1))
+
 # normsur$CensorMCI <- ifelse(is.na(normsur$time_mci),1,0)
 # normsur$Censor7MCI <- ifelse(is.na(normsur$time_mci),1,ifelse(normsur$time_mci>7,1,0))
 # 
 # normsur$statusn <- ifelse(normsur$CensorMCI==0,1,ifelse(normsur$CensorMCI ==1,0,NA))
 # normsur$status7n <- ifelse(normsur$Censor7MCI==0,1,ifelse(normsur$Censor7MCI ==1,0,NA))
 
-norm.surv <- survfit(Surv(time7MCI,status7n) ~ RecrSource, data = normsur)
+norm.surv <- survfit(Surv(time9MCI,status9n) ~ RecrSource, data = normsur)
 plot(norm.surv,col=col_names, xlab="Time", ylab="% Normal",cex.lab=1.3)
 legend(legend=leg3,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -2007,7 +2051,7 @@ grid(nx=NA,ny=NULL,lwd=2)
 ```{r, label=norm_surv_c2, fig=TRUE, echo=FALSE, warning=FALSE}
 normsur <- merge(normsur,c2orig[,c("ID","c2orig")],by="ID",all.x=TRUE) 
 
-norm.surv2 <- survfit(Surv(time7MCI,status7n) ~ RecrSource, data = normsur[normsur$c2orig==1,])
+norm.surv2 <- survfit(Surv(time9MCI,status9n) ~ RecrSource, data = normsur[normsur$c2orig==1,])
 plot(norm.surv2,col=col_names, xlab="Time", ylab="% Normal",cex.lab=1.3)
 legend(legend=leg3,"bottomleft", col= col_names, lty=1, lwd=1, box.col=0)
 
@@ -2071,20 +2115,20 @@ autrt <- enr[enr$ProjName=="ADCLC" & !is.na(enr$EnrolledDate),]
 
 # autrt <- enr[enr$ProjName=="ADCLC" & enr$LatestDesc=="DECEASED"  & !is.na(enr$EnrolledDate) & (is.na(enr $RefusedDate) | enr $RefusedDate < enr $EnrolledDate) & (is.na(enr $DroppedDate) | enr $DroppedDate < enr $EnrolledDate) & (is.na(enr $LostDate) | enr $LostDate < enr $EnrolledDate),]
 
-dcat1 <- dcat[,c("ID","ETHNICITY", "Autopsy", "DtDeath")]
+dcat1 <- dcat[,c("ID","Ethnicity", "Autopsy", "DtDeath")]
 autrt <- merge(autrt,dcat1,by="ID")
 
 autrt$DtDeath <- as.Date(autrt$DtDeath)
 autrt <- autrt[!is.na(autrt$DtDeath),]
 
-autrt$grp <- ifelse(autrt$ETHNICITY==1,"Other Ethnicity",
-              ifelse(autrt$ETHNICITY==2,"Other Ethnicity",
-              ifelse(autrt$ETHNICITY==3,"Other Ethnicity",
-              ifelse(autrt$ETHNICITY==4,"African American",
-              ifelse(autrt$ETHNICITY==5,"Other Ethnicity",
-              ifelse(autrt$ETHNICITY==6,"Hispanic",
-              ifelse(autrt$ETHNICITY==7,"White",
-              ifelse(autrt$ETHNICITY==8,"Other Ethnicity",
+autrt$grp <- ifelse(autrt$Ethnicity==1,"Other Ethnicity",
+              ifelse(autrt$Ethnicity==2,"Other Ethnicity",
+              ifelse(autrt$Ethnicity==3,"Other Ethnicity",
+              ifelse(autrt$Ethnicity==4,"African American",
+              ifelse(autrt$Ethnicity==5,"Other Ethnicity",
+              ifelse(autrt$Ethnicity==6,"Hispanic",
+              ifelse(autrt$Ethnicity==7,"White",
+              ifelse(autrt$Ethnicity==8,"Other Ethnicity",
               NA))))))))
 autrt$grp <- factor(autrt$grp, 
          		labels=c("African American",
@@ -2093,12 +2137,13 @@ autrt$grp <- factor(autrt$grp,
                   "White"))
 
 
-autrt$GrantCycle <- ifelse(autrt$DtDeath < as.Date("2001-07-01"),"1991-2001",ifelse(autrt$DtDeath < as.Date("2006-07-01"),"2001-2006",ifelse(autrt$DtDeath < as.Date("2011-07-01"),"2006-2011","2011-2016")))
+autrt$GrantCycle <- ifelse(autrt$DtDeath < as.Date("2001-07-01"),"1991-2001",ifelse(autrt$DtDeath < as.Date("2006-07-01"),"2001-2006",ifelse(autrt$DtDeath < as.Date("2011-07-01"),"2006-2011",ifelse(autrt$DtDeath < as.Date("2016-07-01"),"2011-2016","2016-2021"))))
 autrt$GrantCycle <- factor(autrt$GrantCycle, 
          		labels=c("1991-2001",
                   "2001-2006", 
                   "2006-2011",
-                  "2011-2016"))
+                  "2011-2016",
+                  "2016-2021"))
 autrt$Autopsy <- ifelse(is.na(autrt$Autopsy) | autrt$Autopsy %in% c(-7,9),0, autrt$Autopsy)
 autrt$Autopsy <- factor(autrt$Autopsy, 
          		labels=c("No Autopsy",
@@ -2111,6 +2156,8 @@ table_data_aut[["1991-2001"]] <- getT1Stat("grp","Autopsy",autrt[!is.na(autrt$gr
 table_data_aut[["2001-2006"]] <- getT1Stat("grp","Autopsy",autrt[!is.na(autrt$grp) & !is.na(autrt$Autopsy) & autrt$GrantCycle=="2001-2006",],hrzl_prop=TRUE)
 table_data_aut[["2006-2011"]] <- getT1Stat("grp","Autopsy",autrt[!is.na(autrt$grp) & !is.na(autrt$Autopsy) & autrt$GrantCycle=="2006-2011",],hrzl_prop=TRUE)
 table_data_aut[["2011-2016"]] <- getT1Stat("grp","Autopsy",autrt[!is.na(autrt$grp) & !is.na(autrt$Autopsy) & autrt$GrantCycle=="2011-2016",],hrzl_prop=TRUE)
+table_data_aut[["2016-2021"]] <- getT1Stat("grp","Autopsy",autrt[!is.na(autrt$grp) & !is.na(autrt$Autopsy) & autrt$GrantCycle=="2016-2021",],hrzl_prop=TRUE)
+
 
 
 
@@ -2218,19 +2265,19 @@ htmlTable(out_data_cp$output_data, align="rrrrrrrrr",
 
 
 
-n_lbd_cvd <- nrow(dcat[!is.na(dcat$PathDx) & dcat$PathDx=="LBD+CVD" & dcat$ETHNICITY %in% c(4,6),])
-n_oth <- nrow(dcat[!is.na(dcat$PathDx) & dcat$PathDx=="Other" & dcat$ETHNICITY %in% c(4,6),])
-n_oth_syn <- nrow(dcat[!is.na(dcat$PathDx) & !dcat$SYNDRMRA %in% c(2,3,5,6) & dcat$ETHNICITY %in% c(4,6),])
+n_lbd_cvd <- nrow(dcat[!is.na(dcat$PathDx) & dcat$PathDx=="LBD+CVD" & dcat$Ethnicity %in% c(4,6),])
+n_oth <- nrow(dcat[!is.na(dcat$PathDx) & dcat$PathDx=="Other" & dcat$Ethnicity %in% c(4,6),])
+n_oth_syn <- nrow(dcat[!is.na(dcat$PathDx) & !dcat$SYNDRMRA %in% c(2,3,5,6) & dcat$Ethnicity %in% c(4,6),])
 
 
 table_data_cp <- list()
  
 # Get the basic stats
-table_data_cp[["1991-2006"]] <- getT1Stat("ClinDxMRA2","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("1991-10-01") & dcat$DtDeath < as.Date("2006-07-01") & dcat$ETHNICITY %in% c(4,6),],hrzl_prop=TRUE)
-table_data_cp[["1991-2006 Total"]] <- getT1Stat("ClinDxPres","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("1991-10-01") & dcat$DtDeath < as.Date("2006-07-01") & dcat$ETHNICITY %in% c(4,6),],hrzl_prop=TRUE)
-table_data_cp[["2006-2016"]] <- getT1Stat("ClinDxMRA2","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("2006-07-01") & dcat$DtDeath < as.Date("2016-07-01") & dcat$ETHNICITY %in% c(4,6),],hrzl_prop=TRUE)
-table_data_cp[["2006-2016 Total"]] <- getT1Stat("ClinDxPres","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("2006-07-01") & dcat$DtDeath < as.Date("2016-07-01") & dcat$ETHNICITY %in% c(4,6),],hrzl_prop=TRUE)
-table_data_cp[["1991-2016 Total"]] <- getT1Stat("ClinDxPres","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("1991-10-01") & dcat$DtDeath < as.Date("2016-07-01") & dcat$ETHNICITY %in% c(4,6),],hrzl_prop=TRUE)
+table_data_cp[["1991-2006"]] <- getT1Stat("ClinDxMRA2","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("1991-10-01") & dcat$DtDeath < as.Date("2006-07-01") & dcat$Ethnicity %in% c(4,6),],hrzl_prop=TRUE)
+table_data_cp[["1991-2006 Total"]] <- getT1Stat("ClinDxPres","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("1991-10-01") & dcat$DtDeath < as.Date("2006-07-01") & dcat$Ethnicity %in% c(4,6),],hrzl_prop=TRUE)
+table_data_cp[["2006-2016"]] <- getT1Stat("ClinDxMRA2","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("2006-07-01") & dcat$DtDeath < as.Date("2016-07-01") & dcat$Ethnicity %in% c(4,6),],hrzl_prop=TRUE)
+table_data_cp[["2006-2016 Total"]] <- getT1Stat("ClinDxPres","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("2006-07-01") & dcat$DtDeath < as.Date("2016-07-01") & dcat$Ethnicity %in% c(4,6),],hrzl_prop=TRUE)
+table_data_cp[["1991-2016 Total"]] <- getT1Stat("ClinDxPres","PathDx",dcat[!dcat$PathDx %in% c("Other","LBD+CVD") & !is.na(dcat$DtDeath) & dcat$DtDeath >= as.Date("1991-10-01") & dcat$DtDeath < as.Date("2016-07-01") & dcat$Ethnicity %in% c(4,6),],hrzl_prop=TRUE)
 
 table_data_cp <- tableBalance(table_data_cp)
 
